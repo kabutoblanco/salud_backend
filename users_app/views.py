@@ -4,10 +4,13 @@ from django.contrib.auth.models import Permission
 from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
+from django.utils.translation import ugettext as _
 
 from .serializers import *
-from .backends import UserAccessPermission
+from .backends import UserAccessPermission, get_token_header, get_user_token
+from datetime import datetime
 
+from rest_framework import exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -20,6 +23,7 @@ from rest_framework.status import (
 )
 
 import json
+import jwt
 
 
 class UserAccessAPI(APIView):
@@ -31,21 +35,30 @@ class UserAccessAPI(APIView):
         username = request.data.get("email")
         password = request.data.get("password")
         if username is None or password is None:
-            return HttpResponse({"Ingrese usuario y contraseña"}, status=HTTP_400_BAD_REQUEST)
+            msg = _('Ingrese usuario y contraseña.')
+            raise exceptions.NotAcceptable(msg)
         user = authenticate(username=username, password=password)
         if not user:
-            return HttpResponse({"El usuario no existe"}, status=HTTP_404_NOT_FOUND)
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
         # Create token user.
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(user)
         token = jwt_encode_handler(payload)
         user = UserSerializer(user)
-        return JsonResponse({"user": user.data, "token": token}, status=HTTP_200_OK)
+        return JsonResponse({"user": user.data, "token": token}, status=HTTP_200_OK, content_type="application/json")
 
     # DELETE equals to LOGOUT.
     def delete(self, request, format=None):
-        pass
+        token = get_token_header(request)
+        user = User.objects.get(email=get_user_token(request).get("username"))
+        try:
+            BlackListToken(token=token, user=user).save()
+        except:
+            msg = _('No se pudo cerrar la sesion.')
+            raise exceptions.ParseError(msg)
+        return HttpResponse(status=HTTP_200_OK)
 
 
 class CrudUsersAPI(APIView):
@@ -54,63 +67,98 @@ class CrudUsersAPI(APIView):
     def post(self, request, format=None):
         permissions = request.data["permissions"]
         user = request.data["user"]
-        if user.get("type") is 1:
+        TYPE = user.get("type")
+        if permissions is None or user is None or TYPE is None:
+            msg = _('Ingrese los datos solicitados.')
+            raise exceptions.NotAcceptable(msg)
+        try:
+            TYPE = int(TYPE)
+        except:
+            msg = _('Ingrese type como entero.')
+            raise exceptions.NotAcceptable(msg)
+        if TYPE is 1:
             serializer = AdministratorSerializer(data=user)
-        elif user.get("type") is 2:
+        elif TYPE is 2:
             serializer = SimpleSerializer(data=user)
+        is_permission = ""
         if serializer.is_valid(raise_exception=True):
-            newUser = serializer.save()
+            try:
+                newUser = serializer.save()
+            except:
+                msg = _('Usuario ya registrado.')
+                raise exceptions.NotAcceptable(msg)
             for permission in permissions:
-                newUser.user_permissions.add(
-                    Permission.objects.get(codename=permission.get("name")))
-        return HttpResponse(status=HTTP_201_CREATED)
+                try:
+                    newUser.user_permissions.add(
+                        Permission.objects.get(codename=permission.get("name")))
+                except Permission.DoesNotExist:
+                    is_permission = is_permission + permission.get("name") + "|"
+        return JsonResponse({"detail": is_permission}, status=HTTP_201_CREATED, content_type="application/json")
 
     def put(self, request, format=None):
         permissions_add = request.data["permissions_add"]
         permissions_remove = request.data["permissions_remove"]
+        if permissions_add is None or permissions_remove is None:
+            msg = _('Ingrese los datos solicitados.')
+            raise exceptions.NotAcceptable(msg)
         try:
-            instance = User.objects.get(email=request.data["email_instance"])  
-            user = request.data["user"]
-            serializer = UserSerializer(instance, data=user)         
-            if serializer.is_valid(raise_exception=True):
-                user = serializer.save()
+            instance = User.objects.get(email=request.data["email_instance"])
+        except:
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
+        user = request.data["user"]
+        serializer = UserSerializer(instance, data=user)
+        is_permission = ""
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
+            try:
                 for permission_remove in permissions_remove:
                     user.user_permissions.remove(Permission.objects.get(
                         codename=permission_remove.get("name")))
+            except:
+                is_permission = is_permission + permission_remove.get("name") + "|"
+            try:
                 for permission_add in permissions_add:
                     user.user_permissions.add(Permission.objects.get(
                         codename=permission_add.get("name")))
-            return HttpResponse(status=HTTP_200_OK)
-        except:
-            return HttpResponse({"El usuario no existe"}, status=HTTP_400_BAD_REQUEST)
+            except:
+                is_permission = is_permission + permission_add.get("name") + "|"
+        return JsonResponse({"detail": is_permission}, status=HTTP_200_OK, content_type="application/json")        
 
     @csrf_exempt
     def delete(self, request, format=None):
         try:
-            instance = User.objects.get(email=request.data.get("email_instance"))
+            instance = User.objects.get(
+                email=request.data.get("email_instance"))
             instance.delete()
             return HttpResponse(status=HTTP_200_OK)
         except:
-            return HttpResponse({"El usuario no existe"}, status=HTTP_400_BAD_REQUEST)
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
 
     def get(self, request, email_instance, format=None):
         try:
             instance = User.objects.get(email=email_instance)
             instance = UserSerializer(instance)
-            return JsonResponse({"user": instance.data}, status=HTTP_200_OK)
-        except:
-            return HttpResponse({"El usuario no existe"}, status=HTTP_400_BAD_REQUEST)
+            return JsonResponse({"user": instance.data}, status=HTTP_200_OK, content_type="application/json")
+        except User.DoesNotExist:
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
+
 
 class ListUsersAPI(APIView):
     permission_classes = (IsAuthenticated, UserAccessPermission, )
+
     def get(self, request, format=None):
         instances = User.objects.all()
         instances = decoder.serialize("json", instances, fields=(
             "first_name", "last_name", "my_center", "my_department", "is_staff", "is_simple", "user_permissions"))
-        return HttpResponse(instances, status=HTTP_200_OK)
-    
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+
+
 class ActiveUserAPI(APIView):
     permission_classes = (IsAuthenticated, UserAccessPermission, )
+
     def put(self, request, format=None):
         try:
             instance = User.objects.get(email=request.data["email_instance"])
@@ -119,4 +167,5 @@ class ActiveUserAPI(APIView):
             instance.save()
             return HttpResponse(status=HTTP_200_OK)
         except:
-            return HttpResponse({"El usuario no existe"}, status=HTTP_400_BAD_REQUEST)                    
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)

@@ -40,7 +40,7 @@ CORS_ORIGIN_WHITELIST = (
 JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True,
     'JWT_VERIFY': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=6000),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=1200),
 }
 
 INSTALLED_APPS = [
@@ -110,7 +110,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'users_app.backends.JSONWebTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.BasicAuthentication',   
     ),

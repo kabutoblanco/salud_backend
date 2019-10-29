@@ -23,6 +23,7 @@ class UserManager(BaseUserManager):
         simple.is_simple = True
         simple.save()
         return simple
+        
 
 # - - - - - - - - - - - - - - - - - -
 
@@ -59,5 +60,13 @@ class Simple(User):
     class Meta:
         verbose_name = 'Simple'
         verbose_name_plural = 'Simples'
+        
+class BlackListToken(models.Model):
+    token = models.CharField(max_length=500)
+    user = models.ForeignKey(User, related_name="token_user", on_delete=models.CASCADE)
+    timestamp = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ("token", "user")
 
 # - - - - - - - - - - - - - - - - - -

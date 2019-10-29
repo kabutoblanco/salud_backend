@@ -11,7 +11,7 @@ from rest_framework.authentication import (
 from rest_framework import permissions
 
 from .serializers import *
-from users_app.serializers import get_user_token
+from users_app.backends import get_user_token
 from users_app.models import User
 
 DELETE = 'DELETE'

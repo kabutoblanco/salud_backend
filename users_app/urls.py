@@ -17,6 +17,7 @@ urlpatterns = [
     # - - - - -    
     # CRUD USERS
     path('login/', UserAccessAPI.as_view(), name="login"),
+    path('logout/', UserAccessAPI.as_view(), name="logout"),
     path('', include(extra_patterns)),
     path('', CrudUsersAPI.as_view(), name="crud_write"),
     path('<str:email_instance>/', CrudUsersAPI.as_view(), name="crud_read"),

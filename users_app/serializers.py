@@ -8,7 +8,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("user_id", "username", "first_name",
-                  "last_name", "email", "my_center", "my_department", "is_active")
+                  "last_name", "email", "my_center", "my_department", "is_active", "is_staff", "is_simple")
     
     def update(self, instance, validated_data):
         instance.email = validated_data.get("email", instance.email)
@@ -60,9 +60,3 @@ class SimpleSerializer(serializers.ModelSerializer):
         instance.last_name = validated_data.get("last_name", instance.last_name)
         instance.save()
         return instance
-
-def get_user_token(request):
-    try:
-        return jwt_decode_handler(request.META.get('HTTP_AUTHORIZATION').split(' ')[1])
-    except:
-        return None

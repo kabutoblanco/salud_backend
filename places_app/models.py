@@ -2,7 +2,7 @@ from django.db import models
 
 # Create your models here.
 class Center(models.Model):
-    name = models.CharField(max_length=36)
+    name = models.CharField(max_length=36, unique=True)
     
     class Meta:
         verbose_name = 'Center'
@@ -13,7 +13,7 @@ class Center(models.Model):
 
 
 class Department(models.Model):
-    name = models.CharField(max_length=36)
+    name = models.CharField(max_length=36, unique=True)
     
     class Meta:
         verbose_name = 'Department'

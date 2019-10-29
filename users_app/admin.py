@@ -28,3 +28,4 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(Administrator, UserAdmin)
 admin.site.register(Simple, UserAdmin)
+admin.site.register(BlackListToken)

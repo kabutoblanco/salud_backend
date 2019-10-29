@@ -33,7 +33,7 @@ class ListCentersAPI(APIView):
     def get(self, request, format=None):
         instances = Center.objects.all()
         instances = decoder.serialize("json", instances)
-        return HttpResponse(instances, status=HTTP_200_OK)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="JSON")
     
 class CrudDepartmentsAPI(APIView):
     permission_classes = (IsAuthenticated, DepartmentAccessPermission, )
@@ -51,5 +51,5 @@ class ListDeparmentsAPI(APIView):
     def get(self, request, format=None):
         instances = Department.objects.all()
         instances = decoder.serialize("json", instances)
-        return HttpResponse(instances, status=HTTP_200_OK)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="JSON")
     
