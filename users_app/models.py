@@ -68,5 +68,14 @@ class BlackListToken(models.Model):
 
     class Meta:
         unique_together = ("token", "user")
+    
+class BlackListIp(models.Model):
+    ip = models.CharField(max_length=500)
+    email = models.EmailField(max_length=50)
+    timestamp = models.DateTimeField(auto_now=True)
+    country = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("ip", "email")
 
 # - - - - - - - - - - - - - - - - - -

@@ -1,4 +1,6 @@
 import jwt
+import math
+import datetime as timeas
 from datetime import datetime
 
 from django.contrib.auth import get_user_model
@@ -12,7 +14,7 @@ from rest_framework.authentication import (
 from rest_framework import permissions
 from rest_framework_jwt.settings import api_settings
 
-from .models import User, BlackListToken
+from .models import User, BlackListToken, BlackListIp
 
 DELETE = 'DELETE'
 
@@ -31,26 +33,19 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
         Returns a two-tuple of `User` and token if a valid signature has been
         supplied using JWT-based authentication.  Otherwise returns `None`.
         """
+        user = request.data.get("email")
+        ip = request.META.get("REMOTE_ADDR")
+        self.validate_ip(ip, user)
+        
         jwt_value = self.get_jwt_value(request)
 
         if jwt_value is None:
             return None
-
-        token = get_token_header(request)
-        user = jwt.decode(jwt_value, verify=False).get("user_id")
-        is_logout = None
         
-        try:
-            is_logout = BlackListToken.objects.get(token=token, user=user)
-        except:
-            pass
-        is_valid = datetime.fromtimestamp(jwt.decode(
-            jwt_value, verify=False).get("exp")) >= datetime.now()
+        token = get_token_header(request)        
+        user = jwt.decode(jwt_value, verify=False).get("user_id")             
+        self.validate_token(token, user, jwt_value)
         
-        if is_logout is not None and is_valid:
-            msg = _('Session has expired.')
-            raise exceptions.AuthenticationFailed(msg)
-
         try:
             payload = jwt_decode_handler(jwt_value)
         except jwt.ExpiredSignature:
@@ -93,6 +88,29 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
             raise exceptions.AuthenticationFailed(msg)
 
         return user
+    
+    def validate_token(self, token, user, jwt_value):
+        is_logout = False
+        try:
+            is_logout = BlackListToken.objects.get(token=token, user=user) is not None
+        except:
+            pass
+        is_valid = datetime.fromtimestamp(jwt.decode(
+            jwt_value, verify=False).get("exp")) >= datetime.now()
+        
+        if is_logout and is_valid:
+            msg = _('Session has expired.')
+            raise exceptions.AuthenticationFailed(msg)
+    
+    def validate_ip(self, ip, user):
+        try:         
+            ip_black = BlackListIp.objects.get(ip=ip, email=user)
+            status_time = datetime.now() - ip_black.timestamp < timeas.timedelta(hours=1)
+            if status_time and ip_black.country > 9:
+                msg = _('Ip bloqueada, intentelo de nuevo mas tarde.')
+                raise exceptions.AuthenticationFailed(msg)
+        except:
+            pass
 
 
 class JSONWebTokenAuthentication(BaseJSONWebTokenAuthentication):

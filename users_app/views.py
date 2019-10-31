@@ -5,10 +5,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
+from django.utils import timezone
 
+import datetime
 from .serializers import *
-from .backends import UserAccessPermission, get_token_header, get_user_token
-from datetime import datetime
+from .backends import UserAccessPermission, get_token_header, get_user_token    
 
 from rest_framework import exceptions
 from rest_framework.views import APIView
@@ -19,7 +20,8 @@ from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
     HTTP_200_OK,
-    HTTP_201_CREATED
+    HTTP_201_CREATED,
+    HTTP_202_ACCEPTED
 )
 
 import json
@@ -37,8 +39,22 @@ class UserAccessAPI(APIView):
         if username is None or password is None:
             msg = _('Ingrese usuario y contraseña.')
             raise exceptions.NotAcceptable(msg)
-        user = authenticate(username=username, password=password)
+        user = authenticate(username=username, password=password)        
         if not user:
+            try:                
+                user = User.objects.get(email=username)                
+                if user:
+                    ip = request.META.get("REMOTE_ADDR")    
+                    print(ip)                                  
+                    try:                        
+                        ip_black = BlackListIp.objects.get(ip=ip, email=username)
+                        ip_black.country = ip_black.country + 1
+                        ip_black.timestamp = timezone.now()
+                        ip_black.save()
+                    except:
+                        BlackListIp(ip=ip, email=username).save()                        
+            except:
+                pass
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
         # Create token user.
@@ -46,8 +62,10 @@ class UserAccessAPI(APIView):
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(user)
         token = jwt_encode_handler(payload)
+        user.last_login = timezone.now()
+        user.save()
         user = UserSerializer(user)
-        return JsonResponse({"user": user.data, "token": token}, status=HTTP_200_OK, content_type="application/json")
+        return JsonResponse({"user": user.data, "token": token}, status=HTTP_202_ACCEPTED, content_type="application/json")
 
     # DELETE equals to LOGOUT.
     def delete(self, request, format=None):
