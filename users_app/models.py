@@ -13,19 +13,24 @@ from django.conf import settings
 # Manager models.
 # - - - - - - - - - - - - - - - - - -
 class UserManager(BaseUserManager):
-    def create_administrator(self, username, user_id, first_name, last_name, email, my_center, my_department):
-        administrator = Administrator(user_id=user_id, username=username, first_name=first_name, last_name=last_name, email=self.normalize_email(
+    def create_administrator(self, user_id, first_name, last_name, email, my_center, my_department):
+        administrator = Administrator(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
+        administrator.username = email
         password = get_random_string(length=6)
         administrator.set_password(password)
         administrator.is_staff = True
         administrator.save()
         administrator.send_create_password(password)
+        administrator.user_permissions.add(
+            Permission.objects.get(codename="view_user"))
         return administrator
 
-    def create_simple(self, username, user_id, first_name, last_name, email, my_center, my_department):
-        simple = Simple(user_id=user_id, username=username, first_name=first_name, last_name=last_name, email=self.normalize_email(
+    def create_simple(self, user_id, first_name, last_name, email, my_center, my_department):
+        simple = Simple(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
+        simple.username = email
+        password = get_random_string(length=6)
         simple.set_password(password)
         simple.is_simple = True
         simple.save()
@@ -40,7 +45,7 @@ class UserManager(BaseUserManager):
 # - - - - - - - - - - - - - - - - - -
 class User(AbstractUser):
     user_id = models.IntegerField(default=0, unique=True)
-    username = models.CharField(max_length=23, blank=True)
+    username = models.CharField(max_length=50, blank=True)
     email = models.EmailField(max_length=50, unique=True)
     password = models.CharField(max_length=236)
     is_simple = models.BooleanField(default=False)
