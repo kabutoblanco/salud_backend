@@ -146,9 +146,9 @@ class CrudUsersAPI(APIView):
 
     def get(self, request, email_instance, format=None):
         try:
-            instance = User.objects.get(email=email_instance)
-            instance = UserSerializer(instance)
-            return JsonResponse({"user": instance.data}, status=HTTP_200_OK, content_type="application/json")
+            instance = User.objects.filter(email=email_instance).values("first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple", "user_permissions")
+            instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
+            return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
         except User.DoesNotExist:
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
