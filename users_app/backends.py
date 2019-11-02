@@ -1,11 +1,10 @@
 import jwt
-import math
-import datetime as timeas
-from datetime import datetime
+import datetime
 
 from django.contrib.auth import get_user_model
 from django.utils.encoding import smart_text
 from django.utils.translation import ugettext as _
+
 from rest_framework import exceptions
 from rest_framework.authentication import (
     BaseAuthentication, get_authorization_header
@@ -14,7 +13,7 @@ from rest_framework.authentication import (
 from rest_framework import permissions
 from rest_framework_jwt.settings import api_settings
 
-from .models import User, BlackListToken, BlackListIp
+from .models import User, Administrator, Simple, BlackListToken, BlackListIp
 
 DELETE = 'DELETE'
 
@@ -95,22 +94,36 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
             is_logout = BlackListToken.objects.get(token=token, user=user) is not None
         except:
             pass
-        is_valid = datetime.fromtimestamp(jwt.decode(
-            jwt_value, verify=False).get("exp")) >= datetime.now()
+        is_valid = datetime.datetime.fromtimestamp(jwt.decode(
+            jwt_value, verify=False).get("exp")) >= datetime.datetime.now()
         
         if is_logout and is_valid:
             msg = _('Session has expired.')
             raise exceptions.AuthenticationFailed(msg)
     
     def validate_ip(self, ip, user):
-        try:         
+        status_time = False
+        status_count = False
+        ip_black = None
+        try:
             ip_black = BlackListIp.objects.get(ip=ip, email=user)
-            status_time = datetime.now() - ip_black.timestamp < timeas.timedelta(hours=1)
-            if status_time and ip_black.country > 9:
-                msg = _('Ip bloqueada, intentelo de nuevo mas tarde.')
-                raise exceptions.AuthenticationFailed(msg)
+            Y = int(ip_black.timestamp.strftime("%Y"))
+            m = int(ip_black.timestamp.strftime("%m"))
+            d = int(ip_black.timestamp.strftime("%d"))
+            H = int(ip_black.timestamp.strftime("%H"))
+            M = int(ip_black.timestamp.strftime("%M"))
+            S = int(ip_black.timestamp.strftime("%S"))
+            date1 = datetime.datetime(Y, m, d, H, M, S)
+                                    
+            status_time = datetime.datetime.now() - date1 < datetime.timedelta(seconds=40)
+            status_count = ip_black.country > 7        
         except:
             pass
+        if status_time and status_count:
+            msg = _('Ip bloqueada, intentelo de nuevo mas tarde.')
+            raise exceptions.AuthenticationFailed(msg)
+        elif not status_time and ip_black:
+            ip_black.delete()
 
 
 class JSONWebTokenAuthentication(BaseJSONWebTokenAuthentication):
@@ -176,7 +189,7 @@ class UserAccessPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         user_request = User.objects.get(
             email=get_user_token(request).get("username"))
-        if user_request is not None:
+        if user_request:
             if request.method in permissions.SAFE_METHODS:
                 if user_request.has_perm("users_app.view_user"):
                     return True
@@ -189,3 +202,33 @@ class UserAccessPermission(permissions.BasePermission):
             return False
         else:
             return False
+        
+class IsAdministrator(permissions.BasePermission):
+    message = "No tiene permisos de administrador"
+
+    def has_permission(self, request, view):
+        try:
+            user_request = Administrator.objects.get(
+                email=get_user_token(request).get("username"))
+            if user_request:
+                return True
+            else:
+                return False
+        except Administrator.DoesNotExist:
+            msg = _('No tiene credenciales de administrador.')
+            raise exceptions.AuthenticationFailed(msg)
+        
+class IsSimple(permissions.BasePermission):
+    message = "No tiene permisos de usuario simple"
+
+    def has_permission(self, request, view):
+        try:
+            user_request = Simple.objects.get(
+                email=get_user_token(request).get("username"))
+            if user_request:
+                return True
+            else:
+                return False
+        except Simple.DoesNotExist:
+            msg = _('No tiene credenciales de usuario simple.')
+            raise exceptions.AuthenticationFailed(msg)

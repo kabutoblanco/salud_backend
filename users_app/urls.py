@@ -22,4 +22,12 @@ urlpatterns = [
     path('', CrudUsersAPI.as_view(), name="crud_write"),
     path('<str:email_instance>/', CrudUsersAPI.as_view(), name="crud_read"),
     # - - - - -
+    # VERIFICATE PERMISSIONS URL
+    path('verificate/administrator/', PermissionAdministratorAPI.as_view(), name="administrator"),
+    path('verificate/simple/', PermissionSimpleAPI.as_view(), name="simple"),
+    # - - - - -
+    # RECOVERY PASSWORD
+    path('password/recovery/', RecoveryPasswordAPI.as_view(), name="send_link"),
+    path('password/<str:token>/', RecoveryPasswordAPI.as_view(), name="recovery"),
+    # - - - - -
 ]

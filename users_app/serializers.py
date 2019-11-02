@@ -22,7 +22,6 @@ class AdministratorSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(default=0)
     username = serializers.CharField(max_length=23)
     email = serializers.EmailField(max_length=50)
-    password = serializers.CharField(max_length=236)
 
     def create(self, validated_data):
         return Administrator.objects.create_administrator(**validated_data)
@@ -37,19 +36,18 @@ class AdministratorSerializer(serializers.ModelSerializer):
     class Meta:
         model = Administrator
         fields = ("user_id", "username", "first_name",
-                  "last_name", "email", "password", "my_center", "my_department")
+                  "last_name", "email", "my_center", "my_department")
 
 
 class SimpleSerializer(serializers.ModelSerializer):
     user_id = serializers.IntegerField(default=0)
     username = serializers.CharField(max_length=23)
     email = serializers.EmailField(max_length=50)
-    password = serializers.CharField(max_length=236)
     
     class Meta:
         model = Simple
         fields = ("user_id", "username", "first_name",
-                  "last_name", "email", "password", "my_center", "my_department")
+                  "last_name", "email", "my_center", "my_department")
 
     def create(self, validated_data):
         return Simple.objects.create_administrator(**validated_data) 

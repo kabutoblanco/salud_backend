@@ -5,17 +5,17 @@ from django.views.decorators.csrf import csrf_exempt
 from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
-from django.utils import timezone
 
-import datetime
 from .serializers import *
-from .backends import UserAccessPermission, get_token_header, get_user_token    
+from .backends import UserAccessPermission, IsAdministrator, IsSimple, get_token_header, get_user_token    
 
+from rest_framework_jwt.utils import jwt_decode_handler
 from rest_framework import exceptions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_jwt.settings import api_settings
+from rest_framework.decorators import authentication_classes, permission_classes
 from rest_framework.status import (
     HTTP_400_BAD_REQUEST,
     HTTP_404_NOT_FOUND,
@@ -26,6 +26,8 @@ from rest_framework.status import (
 
 import json
 import jwt
+import datetime
+from .utils import careful_ip
 
 
 class UserAccessAPI(APIView):
@@ -41,28 +43,20 @@ class UserAccessAPI(APIView):
             raise exceptions.NotAcceptable(msg)
         user = authenticate(username=username, password=password)        
         if not user:
-            try:                
-                user = User.objects.get(email=username)                
-                if user:
-                    ip = request.META.get("REMOTE_ADDR")    
-                    print(ip)                                  
-                    try:                        
-                        ip_black = BlackListIp.objects.get(ip=ip, email=username)
-                        ip_black.country = ip_black.country + 1
-                        ip_black.timestamp = timezone.now()
-                        ip_black.save()
-                    except:
-                        BlackListIp(ip=ip, email=username).save()                        
-            except:
-                pass
+            careful_ip(request, username)
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
         # Create token user.
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(user)
-        token = jwt_encode_handler(payload)
-        user.last_login = timezone.now()
+        token = jwt_encode_handler(payload)        
+        # - - - - - - - 
+        try:
+            BlackListIp.objects.get(ip=ip, email=username).delete()   
+        except:
+            pass
+        user.last_login = datetime.datetime.now()
         user.save()
         user = UserSerializer(user)
         return JsonResponse({"user": user.data, "token": token}, status=HTTP_202_ACCEPTED, content_type="application/json")
@@ -100,11 +94,7 @@ class CrudUsersAPI(APIView):
             serializer = SimpleSerializer(data=user)
         is_permission = ""
         if serializer.is_valid(raise_exception=True):
-            try:
-                newUser = serializer.save()
-            except:
-                msg = _('Usuario ya registrado.')
-                raise exceptions.NotAcceptable(msg)
+            newUser = serializer.save()
             for permission in permissions:
                 try:
                     newUser.user_permissions.add(
@@ -187,3 +177,46 @@ class ActiveUserAPI(APIView):
         except:
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
+        
+class PermissionAdministratorAPI(APIView):
+    permission_classes = (IsAuthenticated, IsAdministrator, )
+    
+    def post(self, request, format=None):
+        return HttpResponse(status=HTTP_200_OK)
+
+class PermissionSimpleAPI(APIView):
+    permission_classes = (IsAuthenticated, IsSimple, )
+    
+    def post(self, request, format=None):
+        return HttpResponse(status=HTTP_200_OK)
+    
+class RecoveryPasswordAPI(APIView):
+    permission_classes = (AllowAny, )
+    
+    def post(self, request, token, format=None):
+        password = request.data.get("password")
+        user = jwt_decode_handler(token)
+        user = User.objects.get(email=user.get("username"))
+        if user is None or password is None:
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
+        user.set_password(password)
+        user.save()
+        return HttpResponse(status=HTTP_200_OK)
+    
+    def put(self, request, format=None):
+        email = request.data.get("email")
+        user = User.objects.get(email=email)
+        if user is None:
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
+        # Create token user.
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+        # Send email user.
+        user.send_recovery_password(token)
+        return HttpResponse(status=HTTP_200_OK)
+    
+    

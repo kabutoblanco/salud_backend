@@ -1,29 +1,37 @@
 from django.db import models
 from places_app import models as places
 
+from django.core.mail import EmailMessage
+from django.template.loader import render_to_string
+from django.utils.crypto import get_random_string
+
 # Create your models here.
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.conf import settings
 
 
 # Manager models.
 # - - - - - - - - - - - - - - - - - -
 class UserManager(BaseUserManager):
-    def create_administrator(self, username, user_id, first_name, last_name, email, password, my_center, my_department):
+    def create_administrator(self, username, user_id, first_name, last_name, email, my_center, my_department):
         administrator = Administrator(user_id=user_id, username=username, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
+        password = get_random_string(length=6)
         administrator.set_password(password)
         administrator.is_staff = True
         administrator.save()
+        administrator.send_create_password(password)
         return administrator
 
-    def create_simple(self, username, user_id, first_name, last_name, email, password, my_center, my_department):
+    def create_simple(self, username, user_id, first_name, last_name, email, my_center, my_department):
         simple = Simple(user_id=user_id, username=username, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
         simple.set_password(password)
         simple.is_simple = True
         simple.save()
+        simple.send_create_password(password)
         return simple
-        
+
 
 # - - - - - - - - - - - - - - - - - -
 
@@ -45,6 +53,31 @@ class User(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['user_id', 'username']
 
+    def send_recovery_password(self, token):
+        body = render_to_string('recovery_password.html', {
+                                'first_name': self.first_name, 'last_name': self.last_name, 'link': 'http://localhost:3000/user/recovery/{}/'.format(token), },)
+        email_message = EmailMessage(
+            subject='Recuperación contraseña Clinapsis Unicauca',
+            body=body,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[self.email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
+
+    def send_create_password(self, password):
+        print(password)
+        body = render_to_string('new_user.html', {
+                                'first_name': self.first_name, 'last_name': self.last_name, 'password': password},)
+        email_message = EmailMessage(
+            subject='Registro en la plataforma Clinapsis Unicauca',
+            body=body,
+            from_email=settings.EMAIL_HOST_USER,
+            to=[self.email],
+        )
+        email_message.content_subtype = 'html'
+        email_message.send()
+
 
 class Administrator(User):
     objects = UserManager()
@@ -60,15 +93,18 @@ class Simple(User):
     class Meta:
         verbose_name = 'Simple'
         verbose_name_plural = 'Simples'
-        
+
+
 class BlackListToken(models.Model):
     token = models.CharField(max_length=500)
-    user = models.ForeignKey(User, related_name="token_user", on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        User, related_name="token_user", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ("token", "user")
-    
+
+
 class BlackListIp(models.Model):
     ip = models.CharField(max_length=500)
     email = models.EmailField(max_length=50)
