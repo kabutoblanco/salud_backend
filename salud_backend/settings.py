@@ -141,9 +141,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.2/topics/i18n/
-URL_System = "http://localhost:3000/"
-URL_RecoveryPassword = "http://localhost:3000/user/recovery/"
-
 LANGUAGE_CODE = 'es-co'
 
 TIME_ZONE = 'America/Bogota'

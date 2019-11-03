@@ -1,5 +1,6 @@
 from django.db import models
 from places_app import models as places
+from django.contrib.auth.models import Permission
 
 from django.core.mail import EmailMessage
 from django.template.loader import render_to_string
@@ -9,6 +10,8 @@ from django.utils.crypto import get_random_string
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.conf import settings
 
+URL_System = "http://localhost:3000/"
+URL_RecoveryPassword = "http://localhost:3000/user/recovery/"
 
 # Manager models.
 # - - - - - - - - - - - - - - - - - -
@@ -60,7 +63,7 @@ class User(AbstractUser):
 
     def send_recovery_password(self, token):
         body = render_to_string('recovery_password.html', {
-                                'first_name': self.first_name, 'last_name': self.last_name, 'url_recovery': '{}{}/'.format(settings.URL_RecoveryPassword, token), 'url_page': settings.URL_System},)
+                                'first_name': self.first_name, 'last_name': self.last_name, 'url_recovery': '{}{}/'.format(URL_RecoveryPassword, token), 'url_page': URL_System},)
         email_message = EmailMessage(
             subject='Recuperación contraseña Clinapsis Unicauca',
             body=body,
@@ -72,7 +75,7 @@ class User(AbstractUser):
 
     def send_create_password(self, password):
         body = render_to_string('new_user.html', {
-                                'email': self.email, 'first_name': self.first_name, 'last_name': self.last_name, 'password': password, 'url_page': settings.URL_System, 'url_recovery': settings.URL_RecoveryPassword},)
+                                'email': self.email, 'first_name': self.first_name, 'last_name': self.last_name, 'password': password, 'url_page': URL_System, 'url_recovery':  URL_RecoveryPassword},)
         email_message = EmailMessage(
             subject='Registro en la plataforma Clinapsis Unicauca',
             body=body,
