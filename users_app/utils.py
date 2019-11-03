@@ -5,6 +5,9 @@ from .models import User, BlackListIp
 
 import datetime
 
+URL_System = "http://localhost:3000/"
+URL_RecoveryPassword = "http://localhost:3000/user/recovery/"
+
 def careful_ip(request, username):
     user = None
     try:                

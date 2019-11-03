@@ -1,39 +1,100 @@
-<table style="max-width: 600px; padding: 0px; margin:0 auto; border-collapse: collapse;">
-    <tr>
-        <td style="padding: 0">
-            <a href="https://imgbb.com/"><img style="min-width:100% ;padding: 0; display: block"
-                    src="https://i.ibb.co/LzSNw1d/header.png" alt="header"></a>
-        </td>
-    </tr>
+<div>
+    <style>
+        @import url('https://fonts.googleapis.com/css?family=Jaldi&display=swap');
 
-    <tr>
-        <td style="background-color:#19467f; padding-bottom:50px;">
-            <div style="color: bisque; margin: 4% 10% 2%; text-align: justify;font-family: sans-serif">
-                <h2 style="color: blanchedalmond; margin: 0 0 7px">CORREO UNICO</h2>
-                <p style="margin: 2px; font-size: 15px">
-                    Cordial saludo {{firts_name}} {{last_name}}.<br><br>
-                    Ha sido registrador con exito en la plataforma Clinapsis de Unicauca.<br><br>
-                    Su contraseña es la siguiente:<br>
-                    <div style="display: flex; justify-content: center">
-                        <div
-                            style="margin-top:15px; width: 33.33%; text-align: center; padding-top:25px;border-radius: 5px; padding: 11px 23px; color: darkslategray; background-color: white">
-                            {{password}}
-                        </div>
-                    </div>
+        * {
+            padding: 0;
+            margin: 0;
+            font-family: 'Jaldi', sans-serif;
+        }
 
-                    <br>
-                    <p style="margin: 2px; font-size: 15px"> Se recomienda modificar la contraseña por defecto por una más segura y facil de recordar.</p>
-                    <p style="color: #b3b3b3; font-size: 12px;">
-                        Recuerde por seguridad no compartir su contraseña a ningun tercero.
-                    </p>
-                    <p style="color: #b3b3b3; font-size: 12px;">Proyecto Ingenieria de Sistemas Unicauca.</p>
-            </div>
-        </td>
-    </tr>
-    <tr>
-        <td style="padding: 0">
-            <a href="https://imgbb.com/"><img style="min-width:100% ;padding: 0; display: block"
-                    src="https://i.ibb.co/7nkTTM4/footer.png" alt="footer"></a>
-        </td>
-    </tr>
-</table>
+        table {
+            width: 600px;
+            border-collapse: collapse;
+            margin: 0 auto;
+        }
+
+        .body {
+            background-color: white;
+            text-align: justify;
+            padding: 0px 50px 0px 50px;
+        }
+
+        .img-banner {
+            width: 100%;
+            padding: 0;
+            display: block;
+        }
+
+        .box-info {
+            text-decoration: none;
+            border-radius: 5px;
+            padding: 11px 23px;
+            color: black;
+            background-color: lightgrey;
+            font-size: 30px;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            padding-bottom: 20px;
+        }
+
+        .paragraph {
+            padding: 0 0 20px 0;
+        }
+
+        .light {
+            color: beige;
+        }
+
+        .dark {
+            color: black;
+        }
+
+        .danger {
+            color: red;
+        }
+    </style>
+    <table>
+        <tr>
+            <td>
+                <a href="https://imgbb.com/">
+                    <img class="img-banner" src="https://i.ibb.co/pfCJfns/header.png" alt="header">
+                </a>
+            </td>
+        </tr>
+        <tr>
+            <td class="body">
+                <h2 class="dark">CORREO UNICO</h2>
+                <p class="paragraph dark">
+                    Cordial saludo {{firts_name}} {{last_name}}. <br>
+                    Ha sido registrado con exito en la plataforma ClinDesign de la Universidad del Cauca. <br>
+                    Puede ingresar con el correo {{correo}} y la siguiente contraseña:
+                </p>
+                <div class="center">
+                    <div class="box-info">{{password}}</div>
+                </div>
+                <p class="paragraph dark">
+                    Para ingresar al sistema de click <a href="{{url_page}}">aquí</a>. <br>
+                    Solicite una nueva contraseña dando click <a href="{{url_recovery}}">aquí</a>.
+                </p>
+                <p class="paragraph danger">                    
+                    Se recomienda modificar la contraseña por defecto por una más segura y facil de recordar.
+                </p>
+                <p class="paragraph dark">
+                    Recuerde por seguridad no compartir su contraseña a ningun tercero. <br>
+                    Proyecto Ingenieria de Sistemas Unicauca.
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <a href="https://imgbb.com/">
+                    <img class="img-banner" src="https://i.ibb.co/jfxKt3x/footer.png" alt="footer">
+                </a>
+            </td>
+        </tr>
+    </table>
+</div>  

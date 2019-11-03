@@ -7,7 +7,9 @@ from django.utils.crypto import get_random_string
 
 # Create your models here.
 from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
+from django.conf import 
+
+from utils import URL_System, URL_RecoveryPassword
 
 
 # Manager models.
@@ -60,7 +62,7 @@ class User(AbstractUser):
 
     def send_recovery_password(self, token):
         body = render_to_string('recovery_password.html', {
-                                'first_name': self.first_name, 'last_name': self.last_name, 'link': 'http://localhost:3000/user/recovery/{}/'.format(token), },)
+                                'first_name': self.first_name, 'last_name': self.last_name, 'url_recovery': '{}{}/'.format(URL_RecoveryPassword, token), 'url_page': URL_System},)
         email_message = EmailMessage(
             subject='Recuperación contraseña Clinapsis Unicauca',
             body=body,
@@ -71,9 +73,8 @@ class User(AbstractUser):
         email_message.send()
 
     def send_create_password(self, password):
-        print(password)
         body = render_to_string('new_user.html', {
-                                'first_name': self.first_name, 'last_name': self.last_name, 'password': password},)
+                                'email': self.email, 'first_name': self.first_name, 'last_name': self.last_name, 'password': password, 'url_page': URL_System, 'url_recovery': URL_RecoveryPassword},)
         email_message = EmailMessage(
             subject='Registro en la plataforma Clinapsis Unicauca',
             body=body,
