@@ -52,7 +52,7 @@ class SimpleSerializer(serializers.ModelSerializer):
                   "email", "my_center", "my_department")
 
     def create(self, validated_data):
-        return Simple.objects.create_administrator(**validated_data)
+        return Simple.objects.create_simple(**validated_data)
 
     def update(self, instance, validated_data):
         instance.email = validated_data.get("email", instance.email)
