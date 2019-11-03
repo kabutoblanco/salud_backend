@@ -145,11 +145,11 @@ class CrudUsersAPI(APIView):
             raise exceptions.NotFound(msg)
 
     def get(self, request, email_instance, format=None):
-        try:
-            instance = User.objects.filter(email=email_instance).values("first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple", "user_permissions")
+        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple")
+        if list(instance).__len__() > 0:
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
             return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
-        except User.DoesNotExist:
+        else:
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
 
@@ -176,6 +176,14 @@ class ActiveUserAPI(APIView):
         except:
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
+        
+class PermissionsUserAPI(APIView):
+    permission_classes = (IsAuthenticated, )
+    
+    def get(self, request, email_instance, format=None):
+        instances = User.objects.filter(email=email_instance).values("user_permissions__codename")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
         
 class PermissionAdministratorAPI(APIView):
     permission_classes = (IsAuthenticated, IsAdministrator, )

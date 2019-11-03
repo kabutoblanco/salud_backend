@@ -23,6 +23,7 @@ urlpatterns = [
     path('<str:email_instance>/', CrudUsersAPI.as_view(), name="crud_read"),
     # - - - - -
     # VERIFICATE PERMISSIONS URL
+    path('permissions/all/<str:email_instance>/', PermissionsUserAPI.as_view(), name="my_permissions"),
     path('verificate/administrator/', PermissionAdministratorAPI.as_view(), name="administrator"),
     path('verificate/simple/', PermissionSimpleAPI.as_view(), name="simple"),
     # - - - - -
