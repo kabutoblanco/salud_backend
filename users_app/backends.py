@@ -208,9 +208,9 @@ class IsAdministrator(permissions.BasePermission):
 
     def has_permission(self, request, view):
         try:
-            user_request = Administrator.objects.get(
-                email=get_user_token(request).get("username"))
-            if user_request:
+            user_request = User.objects.get(
+                email=get_user_token(request).get("email"))
+            if user_request.is_superuser or user_request.is_staff:
                 return True
             else:
                 return False
@@ -224,7 +224,7 @@ class IsSimple(permissions.BasePermission):
     def has_permission(self, request, view):
         try:
             user_request = Simple.objects.get(
-                email=get_user_token(request).get("username"))
+                email=get_user_token(request).get("email"))
             if user_request:
                 return True
             else:
