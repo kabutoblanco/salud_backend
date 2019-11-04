@@ -188,7 +188,7 @@ class UserAccessPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user_request = User.objects.get(
-            email=get_user_token(request).get("username"))
+            email=get_user_token(request).get("email"))
         if user_request:
             if request.method in permissions.SAFE_METHODS:
                 if user_request.has_perm("users_app.view_user"):

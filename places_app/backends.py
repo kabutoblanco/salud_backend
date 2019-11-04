@@ -22,7 +22,7 @@ class CenterAccessPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user_request = User.objects.get(
-            email=get_user_token(request).get("username"))
+            email=get_user_token(request).get("email"))
         if user_request is not None:
             if request.method in permissions.SAFE_METHODS:
                 if user_request.has_perm("users_app.view_center"):
@@ -42,7 +42,7 @@ class DepartmentAccessPermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
         user_request = User.objects.get(
-            email=get_user_token(request).get("username"))
+            email=get_user_token(request).get("email"))
         if user_request is not None:
             if request.method in permissions.SAFE_METHODS:
                 if user_request.has_perm("users_app.view_department"):
