@@ -158,7 +158,7 @@ class ListUsersAPI(APIView):
     permission_classes = (IsAuthenticated, UserAccessPermission, )
 
     def get(self, request, format=None):
-        instances = User.objects.all().values("email", "first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple")
+        instances = User.objects.all().values("email", "first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple", "is_active")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
