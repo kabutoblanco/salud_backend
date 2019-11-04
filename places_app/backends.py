@@ -25,13 +25,13 @@ class CenterAccessPermission(permissions.BasePermission):
             email=get_user_token(request).get("email"))
         if user_request is not None:
             if request.method in permissions.SAFE_METHODS:
-                if user_request.has_perm("users_app.view_center"):
+                if user_request.has_perm("places_app.view_center"):
                     return True
             elif request.method is DELETE:
-                if user_request.has_perm("users_app.delete_center"):
+                if user_request.has_perm("places_app.delete_center"):
                     return True
             else:
-                if user_request.has_perm("users_app.add_center") and user_request.has_perm("users_app.change_center"):
+                if user_request.has_perm("places_app.add_center") and user_request.has_perm("users_app.change_center"):
                     return True
             return False
         else:
@@ -45,13 +45,13 @@ class DepartmentAccessPermission(permissions.BasePermission):
             email=get_user_token(request).get("email"))
         if user_request is not None:
             if request.method in permissions.SAFE_METHODS:
-                if user_request.has_perm("users_app.view_department"):
+                if user_request.has_perm("places_app.view_department"):
                     return True
             elif request.method is DELETE:
-                if user_request.has_perm("users_app.delete_department"):
+                if user_request.has_perm("places_app.delete_department"):
                     return True
             else:
-                if user_request.has_perm("users_app.add_department") and user_request.has_perm("users_app.change_department"):
+                if user_request.has_perm("places_app.add_department") and user_request.has_perm("users_app.change_department"):
                     return True
             return False
         else:
