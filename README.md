@@ -1,13 +1,5 @@
 # salud_backend
 ### Desarrollado para gestionar estudios clinicos
 ## Desarrollado por Ing. de Sistemas Unicauca
-
-##realizando mas cambios
-
-##Terminando de realizar nuevos cambios
-
-
-Terminando de realizar nuevos cambios
-
-#cambios local
+# Aplicando esta vez cambios remotos desde el repositorio WEB
 
