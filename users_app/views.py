@@ -7,7 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 
 from .serializers import *
-from .backends import UserAccessPermission, IsAdministrator, IsSimple, get_token_header, get_user_token    
+from .backends import UserAccessPermission, IsAdministrator, IsSimple, get_token_header, get_user_token
 
 from rest_framework_jwt.utils import jwt_decode_handler
 from rest_framework import exceptions
@@ -41,7 +41,7 @@ class UserAccessAPI(APIView):
         if username is None or password is None:
             msg = _('Ingrese usuario y contraseña.')
             raise exceptions.NotAcceptable(msg)
-        user = authenticate(username=username, password=password)        
+        user = authenticate(username=username, password=password)
         if not user:
             careful_ip(request, username)
             msg = _('El usuario no existe.')
@@ -50,10 +50,10 @@ class UserAccessAPI(APIView):
         jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
         jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
         payload = jwt_payload_handler(user)
-        token = jwt_encode_handler(payload)        
-        # - - - - - - - 
+        token = jwt_encode_handler(payload)
+        # - - - - - - -
         try:
-            BlackListIp.objects.get(ip=ip, email=username).delete()   
+            BlackListIp.objects.get(ip=ip, email=username).delete()
         except:
             pass
         user.last_login = datetime.datetime.now()
@@ -92,7 +92,7 @@ class CrudUsersAPI(APIView):
             serializer = AdministratorSerializer(data=user)
         elif TYPE is 2:
             serializer = SimpleSerializer(data=user)
-        is_permission = ""
+        is_permission = []
         if serializer.is_valid(raise_exception=True):
             newUser = serializer.save()
             for permission in permissions:
@@ -100,7 +100,7 @@ class CrudUsersAPI(APIView):
                     newUser.user_permissions.add(
                         Permission.objects.get(codename=permission.get("name")))
                 except Permission.DoesNotExist:
-                    is_permission = is_permission + permission.get("name") + "|"
+                    is_permission.append(permission.get("name"))
         return JsonResponse({"detail": is_permission}, status=HTTP_201_CREATED, content_type="application/json")
 
     def put(self, request, format=None):
@@ -116,22 +116,23 @@ class CrudUsersAPI(APIView):
             raise exceptions.NotFound(msg)
         user = request.data["user"]
         serializer = UserSerializer(instance, data=user)
-        is_permission = ""
+        is_permission = []
         if serializer.is_valid(raise_exception=True):
             user = serializer.save()
-            try:
-                for permission_remove in permissions_remove:
+            for permission_remove in permissions_remove:
+                try:
                     user.user_permissions.remove(Permission.objects.get(
                         codename=permission_remove.get("name")))
-            except:
-                is_permission = is_permission + permission_remove.get("name") + "|"
-            try:
-                for permission_add in permissions_add:
+                except:
+                    is_permission.append(permission_remove.get("name"))
+
+            for permission_add in permissions_add:
+                try:
                     user.user_permissions.add(Permission.objects.get(
                         codename=permission_add.get("name")))
-            except:
-                is_permission = is_permission + permission_add.get("name") + "|"
-        return JsonResponse({"detail": is_permission}, status=HTTP_200_OK, content_type="application/json")        
+                except:
+                    is_permission.append(permission_add.get("name"))
+        return JsonResponse({"detail": is_permission}, status=HTTP_200_OK, content_type="application/json")
 
     @csrf_exempt
     def delete(self, request, format=None):
@@ -145,7 +146,7 @@ class CrudUsersAPI(APIView):
             raise exceptions.NotFound(msg)
 
     def get(self, request, email_instance, format=None):
-        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple")
+        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name", "my_center", "my_department", "my_center__name", "my_department__name", "is_staff", "is_simple")
         if list(instance).__len__() > 0:
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
             return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
@@ -176,30 +177,34 @@ class ActiveUserAPI(APIView):
         except:
             msg = _('El usuario no existe.')
             raise exceptions.NotFound(msg)
-        
+
+
 class PermissionsUserAPI(APIView):
     permission_classes = (IsAuthenticated, )
-    
+
     def get(self, request, email_instance, format=None):
         instances = User.objects.filter(email=email_instance).values("user_permissions__codename")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
-        
+
+
 class PermissionAdministratorAPI(APIView):
     permission_classes = (IsAuthenticated, IsAdministrator, )
-    
+
     def post(self, request, format=None):
         return HttpResponse(status=HTTP_200_OK)
 
+
 class PermissionSimpleAPI(APIView):
     permission_classes = (IsAuthenticated, IsSimple, )
-    
+
     def post(self, request, format=None):
         return HttpResponse(status=HTTP_200_OK)
-    
+
+
 class RecoveryPasswordAPI(APIView):
     permission_classes = (AllowAny, )
-    
+
     def post(self, request, token, format=None):
         password = request.data.get("password")
         user = jwt_decode_handler(token)
@@ -210,7 +215,7 @@ class RecoveryPasswordAPI(APIView):
         user.set_password(password)
         user.save()
         return HttpResponse(status=HTTP_200_OK)
-    
+
     def put(self, request, format=None):
         email = request.data.get("email")
         user = User.objects.get(email=email)
@@ -225,5 +230,3 @@ class RecoveryPasswordAPI(APIView):
         # Send email user.
         user.send_recovery_password(token)
         return HttpResponse(status=HTTP_200_OK)
-    
-    

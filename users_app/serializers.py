@@ -16,6 +16,10 @@ class UserSerializer(serializers.ModelSerializer):
             "first_name", instance.first_name)
         instance.last_name = validated_data.get(
             "last_name", instance.last_name)
+        instance.my_center = validated_data.get(
+            "my_center", instance.my_center)
+        instance.my_department = validated_data.get(
+            "my_department", instance.my_department)
         instance.save()
         return instance
 
@@ -33,6 +37,10 @@ class AdministratorSerializer(serializers.ModelSerializer):
             "first_name", instance.first_name)
         instance.last_name = validated_data.get(
             "last_name", instance.last_name)
+        instance.my_center = validated_data.get(
+            "my_center", instance.my_center)
+        instance.my_department = validated_data.get(
+            "my_department", instance.my_department)
         instance.save()
         return instance
 
@@ -60,5 +68,9 @@ class SimpleSerializer(serializers.ModelSerializer):
             "first_name", instance.first_name)
         instance.last_name = validated_data.get(
             "last_name", instance.last_name)
+        instance.my_center = validated_data.get(
+            "my_center", instance.my_center)
+        instance.my_department = validated_data.get(
+            "my_department", instance.my_department)
         instance.save()
         return instance
