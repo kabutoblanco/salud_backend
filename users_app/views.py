@@ -7,7 +7,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 
 from .serializers import *
-from .backends import UserAccessPermission, IsAdministrator, IsSimple, get_token_header, get_user_token
+from .backends import UserAccessPermission, IsAdministrator, BaseJSONWebTokenAuthentication, IsSimple, get_token_header, get_user_token
 
 from rest_framework_jwt.utils import jwt_decode_handler
 from rest_framework import exceptions
@@ -64,7 +64,7 @@ class UserAccessAPI(APIView):
     # DELETE equals to LOGOUT.
     def delete(self, request, format=None):
         token = get_token_header(request)
-        user = User.objects.get(email=get_user_token(request).get("username"))
+        user = User.objects.get(email=get_user_token(request).get("email"))
         try:
             BlackListToken(token=token, user=user).save()
         except:
