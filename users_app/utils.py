@@ -6,6 +6,20 @@ from .models import User, BlackListIp
 import datetime
 
 def careful_ip(request, username):
+    """Agrega una ip a la lista negra
+    
+    ... 
+    
+    Parameters
+    - - - - -
+    username : str
+        Correo del usuario
+        
+    Raises
+    - - - - -
+    PermissionDenied
+        Si la contraseña es incorrecta
+    """
     user = None
     try:                
         user = User.objects.get(email=username)                

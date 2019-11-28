@@ -15,8 +15,47 @@ URL_RecoveryPassword = "http://localhost:3000/user/recovery/"
 
 # Manager models.
 # - - - - - - - - - - - - - - - - - -
+
+
 class UserManager(BaseUserManager):
+    """
+    Clase que provee de servicios a las clase Administrator y Simple
+
+    ...
+
+    Methods
+    - - - - -
+    create_administrator(user_id, first_name, last_name, email, my_center, my_department)
+        Crea un nuevo usuario administrador
+
+    create_simple(user_id, first_name, last_name, email, my_center, my_department)
+        Crea un nuevo usuario simple
+    """
+
     def create_administrator(self, user_id, first_name, last_name, email, my_center, my_department):
+        """Crea un nuevo usuario administrador
+        
+        Parameters
+        - - - - -
+        user_id : int
+            Numero de identificacion
+        first_name : str
+            Nombres
+        last_name : str
+            Apellidos
+        email : str
+            Correo electronico
+        my_center : int
+            Centro al que el usuario pertenece
+        my_department : int
+            Departamento al que el usuario pertence
+            
+        Returns
+        - - - - -
+        object
+            Un usuario administrador
+        """
+        
         administrator = Administrator(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
         administrator.username = email
@@ -30,6 +69,29 @@ class UserManager(BaseUserManager):
         return administrator
 
     def create_simple(self, user_id, first_name, last_name, email, my_center, my_department):
+        """Crea un nuevo usuario simple
+        
+        Parameters
+        - - - - -
+        user_id : int
+            Numero de identificacion
+        first_name : str
+            Nombres
+        last_name : str
+            Apellidos
+        email : str
+            Correo electronico
+        my_center : int
+            Centro al que el usuario pertenece
+        my_department : int
+            Departamento al que el usuario pertence
+            
+        Returns
+        - - - - -
+        object
+            Un usuario simple
+        """
+        
         simple = Simple(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
         simple.username = email
@@ -47,6 +109,37 @@ class UserManager(BaseUserManager):
 # Models.
 # - - - - - - - - - - - - - - - - - -
 class User(AbstractUser):
+    """
+    Clase que representa la redefinición de un Usuario en Django
+
+    ...
+
+    Attributes
+    - - - - -
+    user_id : int
+        Numero de identificacion
+    username : str
+        Nombre de usuario, nickname, apodo
+    email : str
+        Correo electronico
+    password : str
+        Contraseña encriptada
+    is_simple : boolean
+        Indica si es un usuario simple
+    my_center : int
+        Centro al que el usuario pertenece
+    my_department : int
+        Departamento al que el usuario pertence
+
+    Methods
+    - - - - - 
+    send_recovery_password(token)
+        Envia un correo para recuperación de contraseña
+
+    send_create_password(password)
+        Envia un correo al recien creado usuario con las credenciales de acceso
+    """
+
     user_id = models.IntegerField(default=0, unique=True)
     username = models.CharField(max_length=50, blank=True)
     email = models.EmailField(max_length=50, unique=True)
@@ -87,6 +180,15 @@ class User(AbstractUser):
 
 
 class Administrator(User):
+    """
+    Clase que representa un usuario tipo Administrador
+
+    ...
+
+    Methods
+    - - - - - 
+    """
+
     objects = UserManager()
 
     class Meta:
@@ -95,6 +197,15 @@ class Administrator(User):
 
 
 class Simple(User):
+    """
+    Clase que representa un usuario tipo Simple
+
+    ...
+
+    Methods
+    - - - - - 
+    """
+
     objects = UserManager()
 
     class Meta:
@@ -103,6 +214,21 @@ class Simple(User):
 
 
 class BlackListToken(models.Model):
+    """
+    Clase que representa la lista negra de Tokens
+
+    ...
+
+    Attributes
+    - - - - -
+    token : str
+        Token de un usuario
+    user : int
+        Pk de un usuario
+    timestamp : datetime
+        Momento exacto cuando se dispara el evento
+    """
+
     token = models.CharField(max_length=500)
     user = models.ForeignKey(
         User, related_name="token_user", on_delete=models.CASCADE)
@@ -113,6 +239,23 @@ class BlackListToken(models.Model):
 
 
 class BlackListIp(models.Model):
+    """
+    Clase que representa la lista negra de ip's
+
+    ...
+
+    Attributes
+    - - - - - 
+    ip : str
+        Ip proveniente de la cabecera HTTP
+    email : str
+        Correo de un usuario
+    timestamp : datetime
+        Momento exacto cuando se dispara el evento
+    country : int
+        Numero de intentos provenientes de la misma ip e email
+    """
+
     ip = models.CharField(max_length=500)
     email = models.EmailField(max_length=50)
     timestamp = models.DateTimeField(auto_now=True)

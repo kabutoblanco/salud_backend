@@ -89,6 +89,22 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
         return user
     
     def validate_token(self, token, user, jwt_value):
+        """Verifica que el token no se encuentre en la lista negra
+        
+        Parameters
+        - - - - -
+        token : str
+            Token de un usuario
+        
+        user : str
+            Pk de un usuario
+            
+        Raises
+        - - - - -
+        AuthenticationFailed
+            Si el token se encuetra en la lista negra y ha expirado
+        """
+        
         is_logout = False
         try:
             is_logout = BlackListToken.objects.get(token=token, user=user) is not None
@@ -102,6 +118,22 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
             raise exceptions.AuthenticationFailed(msg)
     
     def validate_ip(self, ip, user):
+        """Verifica que la ip ha sido bloqueada
+        
+        Parameters
+        - - - - -
+        ip : str
+            Ip de la cabecera de una solicitud
+        
+        user : str
+            Correo de un usuario
+            
+        Raises
+        - - - - -
+        AuthenticationFailed
+            Si la ip esta en la lista negra, el tiempo de espera a un es menor a 1 hora y el número de intentos supera los 10
+        """
+        
         status_time = False
         status_count = False
         ip_black = None
@@ -168,6 +200,21 @@ class JSONWebTokenAuthentication(BaseJSONWebTokenAuthentication):
 
 
 def get_user_token(request):
+    """Extrae el username:correo de la cabecera de la solicitud
+    
+    Parameters
+    - - - - -
+    request : object
+        Objeto de solicitud
+    
+    Returns
+    - - - - -
+    str
+        Correo del token
+    None
+        Si no existe la variable correo en el token
+    """
+    
     try:
         return jwt_decode_handler(request.META.get('HTTP_AUTHORIZATION').split(' ')[1])
     except:
@@ -175,6 +222,21 @@ def get_user_token(request):
 
 
 def get_token_header(request):
+    """Extrae el token de la cabecera de la solicitud
+    
+    Parameters
+    - - - - -
+    request : object
+        Objeto de solicitud
+    
+    Returns
+    - - - - -
+    str
+        Token
+    None
+        Si no existe el token en la solicitud
+    """
+    
     try:
         return request.META.get('HTTP_AUTHORIZATION').split(' ')[1]
     except:
@@ -184,9 +246,40 @@ def get_token_header(request):
 
 
 class UserAccessPermission(permissions.BasePermission):
+    """
+    Clase que define permisos para los usuarios
+    
+    ...
+
+    Attributes
+    - - - - -
+    message : str
+        Define un mensaje de error en caso que el usuario no tenga los permisos
+
+    Methods
+    - - - - -
+    has_permission(request, view)
+        Evalua si un usuario puede manipular la tabla de usuarios
+    """
+    
     message = "No tiene permisos necesarios"
 
     def has_permission(self, request, view):
+        """Evalua si un usuario puede manipular la tabla `User`
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        True
+            Si el usuario (POST, PUT, GET, DELETE) tiene permisos para esos metodos
+        False
+            En caso contrario
+        """
+        
         user_request = User.objects.get(
             email=get_user_token(request).get("email"))
         if user_request:
@@ -207,6 +300,26 @@ class IsAdministrator(permissions.BasePermission):
     message = "No tiene permisos de administrador"
 
     def has_permission(self, request, view):
+        """Evalua si un usuario es de tipo usuario administrador
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        True
+            Si el usuario es is_staff
+        False
+            En caso contrario
+            
+        Raises
+        - - - - -
+        DoesNotExist
+            El usuario no existe
+        """
+        
         try:
             user_request = User.objects.get(
                 email=get_user_token(request).get("email"))
@@ -222,6 +335,26 @@ class IsSimple(permissions.BasePermission):
     message = "No tiene permisos de usuario simple"
 
     def has_permission(self, request, view):
+        """Evalua si un usuario puede manipular la tabla de usuarios simples
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        True
+            Si el usuario es existe en la tabla Simple
+        False
+            En caso contrario
+            
+        Raises
+        - - - - -
+        DoesNotExist
+            El usuario no existe en la tabla Simple
+        """
+        
         try:
             user_request = Simple.objects.get(
                 email=get_user_token(request).get("email"))

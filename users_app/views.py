@@ -31,16 +31,50 @@ from .utils import careful_ip
 
 
 class UserAccessAPI(APIView):
+    """
+    Clase que provee servicios de login:POST y logout:DELETE
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request)
+        Permite a un visitante obtener credenciales para ingresar al sistema
+
+    delete(request)
+        Permite a un usuario cerrar sesion de manera segura
+    """
+
     permission_classes = (AllowAny, )
     @csrf_exempt
     # Post equals to LOGIN.
     def post(self, request, format=None):
+        """Permite a un visitante obtener credenciales para ingresar al sistema
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que debe contener email y password
+
+        Returns
+        - - - - -
+        JsonResponse
+            Un objeto con el usuario, token y el status 200 OK
+
+        Raises
+        - - - - -
+        NotFound
+            Si no existe un usuario con el email y password proveidos
+        """
+
         # TODO implements token.
         username = request.data.get("email")
         password = request.data.get("password")
-        if username is None or password is None:
-            msg = _('Ingrese usuario y contraseña.')
-            raise exceptions.NotAcceptable(msg)
         user = authenticate(username=username, password=password)
         if not user:
             careful_ip(request, username)
@@ -63,6 +97,24 @@ class UserAccessAPI(APIView):
 
     # DELETE equals to LOGOUT.
     def delete(self, request, format=None):
+        """Permite a un usuario cerrar sesion de manera segura
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que debe contener email
+
+        Returns
+        - - - - -
+        HttpResponse
+            Un status 200 OK
+
+        Raises
+        - - - - -
+        ParseError
+            Si no existe un usuario con el email proveido
+        """
+
         token = get_token_header(request)
         user = User.objects.get(email=get_user_token(request).get("email"))
         try:
@@ -74,9 +126,52 @@ class UserAccessAPI(APIView):
 
 
 class CrudUsersAPI(APIView):
+    """
+    Clase que provee servicios CRUD de usuarios add:POST remove:DELETE put:UPDATE read:GET
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request)
+        Permite registrar un nuevo usuario
+
+    put(request)
+        Permite actualizar un usuario
+
+    delete(request)
+        Permite eliminar un usuario de forma permanente
+
+    get(request, email_instance)
+        Permite obtener un usuario
+    """
+
     permission_classes = (IsAuthenticated, UserAccessPermission, )
     @csrf_exempt
     def post(self, request, format=None):
+        """Permite registrar un nuevo usuario
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que debe contener el objeto usuario
+
+        Returns
+        - - - - -
+        JsonResponse
+            Un objeto con una lista de permisos que fallaron en el registro y el status 201 CREATE
+
+        Raises
+        - - - - -
+        NotAcceptable
+            Si los datos solicitados no son validos
+        """
+        
         permissions = request.data["permissions"]
         user = request.data["user"]
         TYPE = user.get("type")
@@ -104,6 +199,26 @@ class CrudUsersAPI(APIView):
         return JsonResponse({"detail": is_permission}, status=HTTP_201_CREATED, content_type="application/json")
 
     def put(self, request, format=None):
+        """Permite actualizar un usuario
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que debe contener el email del usuario
+
+        Returns
+        - - - - -
+        JsonResponse
+            Un objeto con una lista de permisos que fallaron en la modificacion y el status 200 OK
+
+        Raises
+        - - - - -
+        NotAcceptable
+            Si los datos solicitados no son validos
+        NotFound
+            El usuario no existe
+        """
+        
         permissions_add = request.data["permissions_add"]
         permissions_remove = request.data["permissions_remove"]
         if permissions_add is None or permissions_remove is None:
@@ -136,6 +251,24 @@ class CrudUsersAPI(APIView):
 
     @csrf_exempt
     def delete(self, request, format=None):
+        """Permite eliminar un usuario de forma permanente
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que debe contener el email del usuario
+
+        Returns
+        - - - - -
+        HttpResponse
+            Un status 200 OK
+
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
+                
         try:
             instance = User.objects.get(
                 email=request.data.get("email_instance"))
@@ -146,7 +279,29 @@ class CrudUsersAPI(APIView):
             raise exceptions.NotFound(msg)
 
     def get(self, request, email_instance, format=None):
-        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name", "my_center", "my_department", "my_center__name", "my_department__name", "is_staff", "is_simple")
+        """Permite obtener un usuario
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+        
+        email_instance : str
+            Correo del usuario deseado
+
+        Returns
+        - - - - -
+        HttpResponse
+            Un objeto con un usuario y el status 200 OK
+
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
+              
+        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name",
+                                                                    "my_center", "my_department", "my_center__name", "my_department__name", "is_staff", "is_simple")
         if list(instance).__len__() > 0:
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
             return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
@@ -156,18 +311,82 @@ class CrudUsersAPI(APIView):
 
 
 class ListUsersAPI(APIView):
+    """
+    Clase que provee servicios CRUD de usuarios read_all:GET
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    get(request)
+        Permite obtener todos los usuarios
+    """
+
     permission_classes = (IsAuthenticated, UserAccessPermission, )
 
     def get(self, request, format=None):
-        instances = User.objects.all().values("email", "first_name", "last_name", "my_center__name", "my_department__name", "is_staff", "is_simple", "is_active")
+        """Permite obtener todos los usuarios
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        HttpResponse
+            Un objeto con una lista de todos los usuarios y el status 200 OK
+        """
+        
+        instances = User.objects.all().values("email", "first_name", "last_name",
+                                              "my_center__name", "my_department__name", "is_staff", "is_simple", "is_active")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
 
 class ActiveUserAPI(APIView):
+    """
+    Clase que provee servicios CRUD de usuarios put:UPDATE
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    put(request)
+        Permite activar o desactivar un usuario
+    """
+
     permission_classes = (IsAuthenticated, UserAccessPermission, )
 
     def put(self, request, format=None):
+        """Permite activar o desactivar un usuario
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que contiene email_instance
+
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
+            
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
+        
         try:
             instance = User.objects.get(email=request.data["email_instance"])
             is_active = request.data["is_active"]
@@ -180,32 +399,163 @@ class ActiveUserAPI(APIView):
 
 
 class PermissionsUserAPI(APIView):
+    """
+    Clase que provee servicios para extraer todos los permisos de usuarios
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    get(request, email_instance)
+        Permite obtener todos los permisos de un usuario especifico
+    """
+
     permission_classes = (IsAuthenticated, )
 
     def get(self, request, email_instance, format=None):
-        instances = User.objects.filter(email=email_instance).values("user_permissions__codename")
+        """Permite obtener todos los permisos de un usuario especifico
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+        
+        email_instance : str
+            Correo del usuario deseado
+
+        Returns
+        - - - - -
+        HttpResponse
+            Un objeto con una lista de todos los permisos del usuario y el status 200 OK
+        """
+        
+        instances = User.objects.filter(email=email_instance).values(
+            "user_permissions__codename")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
 
 class PermissionAdministratorAPI(APIView):
+    """
+    Clase que provee servicios de verificacion de rol usuario administrador
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request)
+        Implicitamente verifica si es un usuario administrador mediante permission_classes:IsAdministrator
+    """
+
     permission_classes = (IsAuthenticated, IsAdministrator, )
 
     def post(self, request, format=None):
+        """Implicitamente verifica si es un usuario administrador mediante permission_classes:IsAdministrator
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
+        """
+        
         return HttpResponse(status=HTTP_200_OK)
 
 
 class PermissionSimpleAPI(APIView):
+    """
+    Clase que provee servicios de verificacion de rol usuario simple
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request)
+        Implicitamente verifica si es un usuario simple mediante permission_classes:IsSimple
+    """
+    
     permission_classes = (IsAuthenticated, IsSimple, )
 
     def post(self, request, format=None):
+        """Implicitamente verifica si es un usuario simple mediante permission_classes:IsSimple
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud
+
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
+        """
+        
         return HttpResponse(status=HTTP_200_OK)
 
 
 class RecoveryPasswordAPI(APIView):
+    """
+    Clase que provee servicios para recuperacion de constraseña
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request, token)
+        Permite modificar la contraseña de un usuario
+        
+    put(request)
+        Permite solicitar mediante correo una nueva contraseña
+    """
+    
     permission_classes = (AllowAny, )
 
     def post(self, request, token, format=None):
+        """Permite modificar la contraseña de un usuario
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que contiene la nueva password
+        
+        token : str
+            Token actual del usuario
+
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
+            
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
+        
         password = request.data.get("password")
         user = jwt_decode_handler(token)
         user = User.objects.get(email=user.get("username"))
@@ -217,6 +567,27 @@ class RecoveryPasswordAPI(APIView):
         return HttpResponse(status=HTTP_200_OK)
 
     def put(self, request, format=None):
+        """Permite solicitar mediante correo una nueva contraseña
+
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que contiene el correo
+        
+        token : str
+            Token actual del usuario
+
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
+            
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
+        
         email = request.data.get("email")
         user = User.objects.get(email=email)
         if user is None:
