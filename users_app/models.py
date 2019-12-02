@@ -233,8 +233,14 @@ class BlackListToken(models.Model):
     user = models.ForeignKey(
         User, related_name="token_user", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return '{} {}'.format(self.user, self.timestamp)
 
     class Meta:
+        verbose_name = 'Token baneado'
+        verbose_name_plural = 'Tokens baneados'
+        
         unique_together = ("token", "user")
 
 
@@ -260,8 +266,14 @@ class BlackListIp(models.Model):
     email = models.EmailField(max_length=50)
     timestamp = models.DateTimeField(auto_now=True)
     country = models.IntegerField(default=0)
+    
+    def __str__(self):
+        return '{} {}'.format(self.email, self.timestamp)
 
     class Meta:
+        verbose_name = 'Ip baneada'
+        verbose_name_plural = 'Ips baneadas'
+        
         unique_together = ("ip", "email")
 
 # - - - - - - - - - - - - - - - - - -
