@@ -300,8 +300,8 @@ class CrudUsersAPI(APIView):
             El usuario no existe
         """
               
-        instance = User.objects.filter(email=email_instance).values("email", "first_name", "last_name",
-                                                                    "my_center", "my_department", "my_center__name", "my_department__name", "is_staff", "is_simple")
+        instance = User.objects.filter(email=email_instance).values("id", "email", "first_name", "last_name",
+                                                                    "my_center", "my_department", "my_center__name", "my_department__name", "is_staff", "is_simple", "is_active")
         if list(instance).__len__() > 0:
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
             return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
@@ -343,7 +343,7 @@ class ListUsersAPI(APIView):
             Un objeto con una lista de todos los usuarios y el status 200 OK
         """
         
-        instances = User.objects.all().values("email", "first_name", "last_name",
+        instances = User.objects.all().values("id", "email", "first_name", "last_name",
                                               "my_center__name", "my_department__name", "is_staff", "is_simple", "is_active")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")

@@ -9,7 +9,7 @@ extra_patterns = [
     path('user/', CrudStudyUsersAPI.as_view()),
     path('center/<int:study_id>/', CrudStudyCentersAPI.as_view()),
     path('user/<int:study_id>/', CrudStudyUsersAPI.as_view()),
-    path('user/<int:user_id>/', CrudStudyUsersAPI.as_view()),
+    path('user/me/<int:user_id>/', CrudUserStudiesAPI.as_view()),
 ]
 
 urlpatterns = [
