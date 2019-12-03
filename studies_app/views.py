@@ -181,4 +181,12 @@ class CrudStudyUsersAPI(APIView):
         instances = StudyUsers.objects.filter(study_id=study_id).values("study_id", "user_id", "study_id__title_little", "user_id__email")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+    
+class CrudUserStudiesAPI(APIView):
+    permission_classes = (StudyUsersAccessPermission, )
+    
+    def get(self, request, user_id, format=None):
+        instances = StudyUsers.objects.filter(user_id=user_id).values("study_id", "user_id", "study_id__title_little", "user_id__email")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
         
