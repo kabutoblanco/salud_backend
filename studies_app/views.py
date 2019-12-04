@@ -39,6 +39,7 @@ class CrudStudiesAPI(APIView):
         """
         
         study = request.data["study"]
+        print(study)
         serializer = StudySerializer(data=study)
         if serializer.is_valid(raise_exception=True):
             serializer.save()

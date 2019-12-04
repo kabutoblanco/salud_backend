@@ -3,7 +3,6 @@ from rest_framework_jwt.utils import jwt_decode_handler
 
 from .models import *
 
-
 class StudySerializer(serializers.ModelSerializer):
     class Meta:
         model = Study
