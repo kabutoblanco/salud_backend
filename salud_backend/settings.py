@@ -47,7 +47,7 @@ EMAIL_USE_TLS = True
 JWT_AUTH = {
     'JWT_ALLOW_REFRESH': True,
     'JWT_VERIFY': True,
-    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=5),
+    'JWT_EXPIRATION_DELTA': datetime.timedelta(seconds=60000),
 }
 
 INSTALLED_APPS = [
