@@ -7,7 +7,7 @@ from .models import *
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ("user_id", "username", "first_name",
+        fields = ("id", "user_id", "username", "first_name",
                   "last_name", "email", "my_center", "my_department", "is_active", "is_staff", "is_simple")
 
     def update(self, instance, validated_data):
