@@ -91,8 +91,8 @@ class ListStudiesAPI(APIView):
     permission_classes = (StudyAccessPermission, )
     
     def get(self, request, format=None):
-        instances = Study.objects.all()
-        instances = decoder.serialize("json", instances)
+        instances = Study.objects.all().values("id", "title_little", "status", "date_reg", "date_in_study", "date_trueaout_end", "manager_reg", "manager_reg__first_name", "principal_inv", "principal_inv__first_name", "is_active")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
     
 class CrudStudyCentersAPI(APIView):

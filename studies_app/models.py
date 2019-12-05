@@ -47,7 +47,7 @@ class Study(models.Model):
     status = models.IntegerField(choices=STATUS_CHOICES, default=1)
     date_reg = models.DateTimeField(auto_now=True)
     date_in_study = models.DateField(auto_now=False)
-    date_prevout_end = models.DateField(auto_now=False)
+    date_prevout_end = models.DateField(auto_now=False, blank=True, null=True)
     date_actout_end = models.DateField(auto_now=False, blank=True, null=True)
     date_trueaout_end = models.DateField(auto_now=False, blank=True, null=True)
     description = models.CharField(max_length=524, blank=True, null=True)
