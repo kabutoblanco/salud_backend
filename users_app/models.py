@@ -1,25 +1,17 @@
-from django.db import models
 from places_app import models as places
-from django.contrib.auth.models import Permission
+from .globals import *
 
+from django.conf import settings
+from django.contrib.auth.models import Permission, AbstractUser, BaseUserManager
 from django.core.mail import EmailMessage
+from django.db import models
 from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
-
-# Create your models here.
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
-
-URL_System = "http://localhost:3000/"
-URL_RecoveryPassword = "http://localhost:3000/user/recovery/"
-
-# Manager models.
-# - - - - - - - - - - - - - - - - - -
 
 
 class UserManager(BaseUserManager):
     """
-    Clase que provee de servicios a las clase Administrator y Simple
+    Clase usada para prestar servicios a `Administrator` y `Simple`
 
     ...
 
@@ -34,11 +26,11 @@ class UserManager(BaseUserManager):
 
     def create_administrator(self, user_id, first_name, last_name, email, my_center, my_department):
         """Crea un nuevo usuario administrador
-        
+
         Parameters
         - - - - -
         user_id : int
-            Numero de identificacion
+            Número de identificación
         first_name : str
             Nombres
         last_name : str
@@ -46,35 +38,35 @@ class UserManager(BaseUserManager):
         email : str
             Correo electronico
         my_center : int
-            Centro al que el usuario pertenece
+            Centro al que pertenece
         my_department : int
-            Departamento al que el usuario pertence
-            
+            Departamento al que pertence
+
         Returns
         - - - - -
-        object
+        `Administrator`
             Un usuario administrador
         """
-        
+
         administrator = Administrator(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
         administrator.username = email
         password = get_random_string(length=6)
         administrator.set_password(password)
         administrator.is_staff = True
-        administrator.save()
-        administrator.send_create_password(password)
         administrator.user_permissions.add(
             Permission.objects.get(codename="view_user"))
+        administrator.save()
+        administrator.send_create_password(password)
         return administrator
 
     def create_simple(self, user_id, first_name, last_name, email, my_center, my_department):
         """Crea un nuevo usuario simple
-        
+
         Parameters
         - - - - -
         user_id : int
-            Numero de identificacion
+            Número de identificación
         first_name : str
             Nombres
         last_name : str
@@ -82,16 +74,16 @@ class UserManager(BaseUserManager):
         email : str
             Correo electronico
         my_center : int
-            Centro al que el usuario pertenece
+            Centro al que pertenece
         my_department : int
-            Departamento al que el usuario pertence
-            
+            Departamento al que pertence
+
         Returns
         - - - - -
-        object
+        `Simple`
             Un usuario simple
         """
-        
+
         simple = Simple(user_id=user_id, first_name=first_name, last_name=last_name, email=self.normalize_email(
             email), my_center=my_center, my_department=my_department)
         simple.username = email
@@ -103,21 +95,16 @@ class UserManager(BaseUserManager):
         return simple
 
 
-# - - - - - - - - - - - - - - - - - -
-
-
-# Models.
-# - - - - - - - - - - - - - - - - - -
 class User(AbstractUser):
     """
-    Clase que representa la redefinición de un Usuario en Django
+    Clase usada para representar la redefinición de `User` en Django
 
     ...
 
     Attributes
     - - - - -
     user_id : int
-        Numero de identificacion
+        Número de identificación
     username : str
         Nombre de usuario, nickname, apodo
     email : str
@@ -127,9 +114,9 @@ class User(AbstractUser):
     is_simple : boolean
         Indica si es un usuario simple
     my_center : int
-        Centro al que el usuario pertenece
+        Centro al que pertenece
     my_department : int
-        Departamento al que el usuario pertence
+        Departamento al que pertence
 
     Methods
     - - - - - 
@@ -137,7 +124,7 @@ class User(AbstractUser):
         Envia un correo para recuperación de contraseña
 
     send_create_password(password)
-        Envia un correo al recien creado usuario con las credenciales de acceso
+        Envia un correo a un usuario creado con las credenciales de acceso
     """
 
     user_id = models.IntegerField(default=0, unique=True)
@@ -181,29 +168,19 @@ class User(AbstractUser):
 
 class Administrator(User):
     """
-    Clase que representa un usuario tipo Administrador
-
-    ...
-
-    Methods
-    - - - - - 
+    Clase usada para representar un usuario tipo `Administrator`
     """
 
     objects = UserManager()
 
     class Meta:
-        verbose_name = 'Administrator'
-        verbose_name_plural = 'Administrators'
+        verbose_name = 'Administrador'
+        verbose_name_plural = 'Administradores'
 
 
 class Simple(User):
     """
-    Clase que representa un usuario tipo Simple
-
-    ...
-
-    Methods
-    - - - - - 
+    Clase usada para representar un usuario tipo `Simple`
     """
 
     objects = UserManager()
@@ -215,7 +192,7 @@ class Simple(User):
 
 class BlackListToken(models.Model):
     """
-    Clase que representa la lista negra de Tokens
+    Clase usada para representar una lista negra de Tokens
 
     ...
 
@@ -233,20 +210,20 @@ class BlackListToken(models.Model):
     user = models.ForeignKey(
         User, related_name="token_user", on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return '{} {}'.format(self.user, self.timestamp)
 
     class Meta:
         verbose_name = 'Token baneado'
         verbose_name_plural = 'Tokens baneados'
-        
+
         unique_together = ("token", "user")
 
 
 class BlackListIp(models.Model):
     """
-    Clase que representa la lista negra de ip's
+    Clase usada para representar una lista negra de ip's
 
     ...
 
@@ -266,14 +243,12 @@ class BlackListIp(models.Model):
     email = models.EmailField(max_length=50)
     timestamp = models.DateTimeField(auto_now=True)
     country = models.IntegerField(default=0)
-    
+
     def __str__(self):
         return '{} {}'.format(self.email, self.timestamp)
 
     class Meta:
         verbose_name = 'Ip baneada'
         verbose_name_plural = 'Ips baneadas'
-        
-        unique_together = ("ip", "email")
 
-# - - - - - - - - - - - - - - - - - -
+        unique_together = ("ip", "email")

@@ -32,6 +32,31 @@ import jwt
 import datetime
 
 class CrudStudiesAPI(APIView):
+    """
+    Clase que provee servicios CRUD de usuarios add:POST remove:DELETE put:UPDATE read:GET
+
+    ...
+
+    Attributes
+    - - - - -
+    permission_classes : lst
+        Define los permisos para los servicios
+
+    Methods
+    - - - - -
+    post(request)
+        Permite registrar un nuevo estudio
+
+    put(request)
+        Permite actualizar un estudio
+
+    delete(request, study_id)
+        Permite activar o desactivar un estudio segun sea el caso
+
+    get(request, study_id)
+        Permite obtener un estudio
+    """
+    
     permission_classes = (StudyAccessPermission, )
     
     def post(self, request, format=None):
@@ -62,7 +87,7 @@ class CrudStudiesAPI(APIView):
         return HttpResponse(status=HTTP_200_OK)
     
     def delete(self, request, study_id, format=None):
-        """Permite activar o desactivar segun sea el estado actual del objeto
+        """Permite activar o desactivar un estudio segun sea el caso
         """
         
         try:

@@ -5,8 +5,8 @@ class Center(models.Model):
     name = models.CharField(max_length=36, unique=True)
     
     class Meta:
-        verbose_name = 'Center'
-        verbose_name_plural = 'Centers'
+        verbose_name = 'Centro'
+        verbose_name_plural = 'Centros'
         
     def __str__(self):
         return '{}'.format(self.name)
@@ -16,8 +16,8 @@ class Department(models.Model):
     name = models.CharField(max_length=36, unique=True)
     
     class Meta:
-        verbose_name = 'Department'
-        verbose_name_plural = 'Departments'
+        verbose_name = 'Departamento'
+        verbose_name_plural = 'Departamentos'
         
     def __str__(self):
         return '{}'.format(self.name)

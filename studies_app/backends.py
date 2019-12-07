@@ -38,7 +38,7 @@ class StudyAccessPermission(permissions.BasePermission):
     message = "No tiene permisos necesarios"
 
     def has_permission(self, request, view):
-        """Evalua si un usuario puede manipular la tabla `User`
+        """Evalua si un usuario puede manipular la tabla `Study`
 
         Parameters
         - - - - -

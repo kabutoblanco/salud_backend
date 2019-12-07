@@ -14,6 +14,7 @@ class StudySerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.title_little = validated_data.get("title_little", instance.title_little)
         instance.title_long = validated_data.get("title_long", instance.title_long)
+        instance.status = validated_data.get("status", instance.status)
         instance.date_trueaout_end = validated_data.get("date_trueaout_end", instance.date_trueaout_end)
         instance.description = validated_data.get("description", instance.description)
         instance.promoter = validated_data.get("promoter", instance.promoter)

@@ -1,40 +1,152 @@
-from django.db import models
-# from places_app import models as places
-from django.contrib.auth.models import Permission
-from django.utils.translation import ugettext_lazy as _
-
-# from django.core.mail import EmailMessage
-from django.template.loader import render_to_string
-from django.utils.crypto import get_random_string
-
-# Create your models here.
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.conf import settings
-from users_app.models import User
 from places_app.models import Center
+from users_app.models import User
+
+from django.conf import settings
+from django.contrib.auth.models import Permission, AbstractUser, BaseUserManager
+from django.db import models
+from django.utils.crypto import get_random_string
+from django.utils.translation import ugettext_lazy as _
+from django.template.loader import render_to_string
 
 
 class StudyManager(BaseUserManager):
+    """
+    Clase usada para prestar servicios a `Study`, `StudyCenters` y `StudyUsers`
 
-    # Create your models here.
+    ...
+
+    Methods
+    - - - - -
+    create_study(study_id, title_little, title_long, status, date_in_study, date_prevout_end, date_actout_end, date_trueaout_end, description, promoter, financial_entity, amount, manager_reg, principal_inv, manager_1, manager_2)
+        Crea un nuevo estudio
+
+    create_studyCenters(study_id, center_id)
+        Crea un nuevo usuario simple
+
+    create_studyUsers(self, study_id, user_id)
+        Crea un nuevo usuario simple
+    """
+
     def create_study(self, study_id, title_little, title_long, status, date_in_study, date_prevout_end, date_actout_end, date_trueaout_end, description, promoter, financial_entity, amount, manager_reg, principal_inv, manager_1, manager_2):
+        """Crea un nuevo estudio
+
+        Parameters
+        - - - - -
+        study_id : int
+            Número de identificación
+        title_little : str
+            Nombre corto
+        title_long : str
+            Nombre largo
+        status : int
+            Estado del proyecto
+            1 : REGISTRO
+            2 : DISEÑO
+            3 : FINALIZADO
+        date_reg : DateTimeField
+            Fecha de registro
+        date_in_study : DateTimeField
+            Fecha de inicio del estudio
+        date_prevout_end : DateTimeField
+            Fecha de previa de finalización del estudio
+        date_actout_end : DateTimeField
+            Fecha de actual de finalización del estudio
+        date_trueaout_end : DateTimeField
+            Fecha de verdadera de finalización del estudio
+        description : str
+            Descripción del proyecto
+        promoter : str
+            Promotor que financia el estudio
+        financial_entity : str
+            Entidad financiadora del estudio
+        amount : float
+            Monto total de financiamiento
+        manager_reg : int
+            Usuario encargado del registro
+        principal_inv : int
+            Investigador principal
+        manager_1 : int
+            Primer encargado
+        manager_2 : int
+            Segundo encargado
+        is_active : boolean
+            Indica si esta activo
+
+        Returns
+        - - - - -
+        `Study`
+            Un estudio
+        """
+
         study = Study(study_id=study_id, title_little=title_little, title_long=title_long, status=status, date_in_study=date_in_study,
                       date_prevout_end=date_prevout_end, date_actout_end=date_actout_end, date_trueaout_end=date_trueaout_end, description=description, promoter=promoter, financial_entity=financial_entity, amount=amount, manager_reg=manager_reg, principal_inv=principal_inv, manager_1=manager_1, manager_2=manager_2)
         study.save()
         return study
 
     def create_studyCenters(self, study_id, center_id):
+        """Crea una relación entre `Study` y `Center`"""
+
         study = StudyCenters(study_id=study_id, center_id=center_id)
         study.save()
         return study
 
     def create_studyUsers(self, study_id, user_id):
+        """Crea una relación entre `Study` y `User`"""
+
         study = StudyUsers(study_id=study_id, user_id=user_id)
         study.save()
         return study
 
 
 class Study(models.Model):
+    """
+    Clase usada para representar un `Study`
+    
+    ...
+
+    Attributes
+    - - - - -
+    study_id : int
+        Número de identificación
+    title_little : str
+        Nombre corto
+    title_long : str
+        Nombre largo
+    status : int
+        Estado del proyecto
+        1 : REGISTRO
+        2 : DISEÑO
+        3 : FINALIZADO
+    date_reg : DateTimeField
+        Fecha de registro
+    date_in_study : DateTimeField
+        Fecha de inicio del estudio
+    date_prevout_end : DateTimeField
+        Fecha de previa de finalización del estudio
+    date_actout_end : DateTimeField
+        Fecha de actual de finalización del estudio
+    date_trueaout_end : DateTimeField
+        Fecha de verdadera de finalización del estudio
+    description : str
+        Descripción del proyecto
+    promoter : str
+        Promotor que financia el estudio
+    financial_entity : str
+        Entidad financiadora del estudio
+    amount : float
+        Monto total de financiamiento
+    manager_reg : int
+        Usuario encargado del registro
+    principal_inv : int
+        Investigador principal
+    manager_1 : int
+        Primer encargado
+    manager_2 : int
+        Segundo encargado
+    is_active : boolean
+        Indica si esta activo
+    """
+
     STATUS_CHOICES = (
         (1, _("REGISTRO")),
         (2, _("DISEÑO")),
@@ -73,11 +185,23 @@ class Study(models.Model):
         verbose_name = 'Estudio'
         verbose_name_plural = 'Estudios'
 
-        unique_together = ("manager_reg", "principal_inv",
-                           "manager_1", "manager_2")
-
 
 class StudyCenters(models.Model):
+    """
+    Clase usada para representar la relación entre un `Study` y `Center`
+    
+    ...
+
+    Attributes
+    - - - - -
+    study_id : int
+        Pk usuario asociado
+    center_id : int
+        Pk centro asociado
+    is_active : boolean
+        Indica si esta activo
+    """
+    
     study_id = models.ForeignKey(Study, on_delete=models.CASCADE)
     center_id = models.ForeignKey(Center, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
@@ -95,6 +219,21 @@ class StudyCenters(models.Model):
 
 
 class StudyUsers(models.Model):
+    """
+    Clase usada para representar la relación entre un `Study` y `User`
+    
+    ...
+
+    Attributes
+    - - - - -
+    study_id : int
+        Pk usuario asociado
+    user_id : int
+        Pk usuario asociado
+    is_active : boolean
+        Indica si esta activo
+    """
+    
     study_id = models.ForeignKey(Study, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
