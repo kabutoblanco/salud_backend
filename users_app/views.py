@@ -187,7 +187,7 @@ class CrudUsersAPI(APIView):
                 newUser = serializer.save()
             except IntegrityError as e:
                 field = translate(e)
-                msg = _('Campo {} repetido.'.format(field))
+                msg = _('Ya existe un usuario con igual {}.'.format(field))
                 raise exceptions.NotAcceptable(msg)
             for permission in permissions:
                 try:
@@ -568,38 +568,38 @@ class RecoveryPasswordAPI(APIView):
         return JsonResponse({"detail": "Contraseña cambiada con exito."}, status=HTTP_202_ACCEPTED, content_type="application/json")
 
 
-def put(self, request, format=None):
-    """Permite solicitar mediante correo una nueva contraseña
+    def put(self, request, format=None):
+        """Permite solicitar mediante correo una nueva contraseña
 
-    Parameters
-    - - - - -
-    request : object
-        Objeto de solicitud que contiene el correo
+        Parameters
+        - - - - -
+        request : object
+            Objeto de solicitud que contiene el correo
 
-    token : str
-        Token actual del usuario
+        token : str
+            Token actual del usuario
 
-    Returns
-    - - - - -
-    HttpResponse
-        El status 200 OK
+        Returns
+        - - - - -
+        HttpResponse
+            El status 200 OK
 
-    Raises
-    - - - - -
-    NotFound
-        El usuario no existe
-    """
+        Raises
+        - - - - -
+        NotFound
+            El usuario no existe
+        """
 
-    email = request.data.get("email")
-    user = User.objects.get(email=email)
-    if user is None:
-        msg = _('El usuario no existe.')
-        raise exceptions.NotFound(msg)
-    # Create token user.
-    jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-    jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-    payload = jwt_payload_handler(user)
-    token = jwt_encode_handler(payload)
-    # Send email user.
-    user.send_recovery_password(token)
-    return HttpResponse(status=HTTP_200_OK)
+        email = request.data.get("email")
+        user = User.objects.get(email=email)
+        if user is None:
+            msg = _('El usuario no existe.')
+            raise exceptions.NotFound(msg)
+        # Create token user.
+        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+        payload = jwt_payload_handler(user)
+        token = jwt_encode_handler(payload)
+        # Send email user.
+        user.send_recovery_password(token)
+        return HttpResponse(status=HTTP_200_OK)
