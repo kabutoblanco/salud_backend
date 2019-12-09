@@ -53,7 +53,7 @@ class BaseJSONWebTokenAuthentication(BaseAuthentication):
                 BlackListToken.objects.get(token=token, user=user).delete()
             except:
                 pass
-            msg = _('Signature has expired.')
+            msg = _('El token ha expirado.')
             raise exceptions.AuthenticationFailed(msg)
         except jwt.DecodeError:
             msg = _('Error decoding signature.')

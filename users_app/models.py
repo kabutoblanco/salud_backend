@@ -54,9 +54,9 @@ class UserManager(BaseUserManager):
         password = get_random_string(length=6)
         administrator.set_password(password)
         administrator.is_staff = True
+        administrator.save()
         administrator.user_permissions.add(
             Permission.objects.get(codename="view_user"))
-        administrator.save()
         administrator.send_create_password(password)
         return administrator
 

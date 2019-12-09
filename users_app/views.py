@@ -2,13 +2,14 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import Permission
 from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
+from django.db import IntegrityError
 from django.http import HttpResponse, JsonResponse
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 
 from .backends import *
 from .serializers import *
-from .utils import careful_ip
+from .utils import careful_ip, translate
 
 from rest_framework import exceptions
 from rest_framework.decorators import authentication_classes, permission_classes
@@ -175,14 +176,19 @@ class CrudUsersAPI(APIView):
 
         permissions = request.data["permissions"]
         user = request.data["user"]
-        TYPE = user.get("type")
+        TYPE = int(user.get("type"))
         if TYPE is 1:
             serializer = AdministratorSerializer(data=user)
         elif TYPE is 2:
             serializer = SimpleSerializer(data=user)
         is_permission = []
         if serializer.is_valid(raise_exception=True):
-            newUser = serializer.save()
+            try:
+                newUser = serializer.save()
+            except IntegrityError as e:
+                field = translate(e)
+                msg = _('Campo {} repetido.'.format(field))
+                raise exceptions.NotAcceptable(msg)
             for permission in permissions:
                 try:
                     newUser.user_permissions.add(
@@ -241,7 +247,7 @@ class CrudUsersAPI(APIView):
 
     @csrf_exempt
     def delete(self, request, format=None):
-        """Permite eliminar un usuario de forma permanente
+        """Permite activar o desactivar un estudio segun sea el caso
 
         Parameters
         - - - - -
@@ -260,9 +266,10 @@ class CrudUsersAPI(APIView):
         """
 
         try:
-            instance = User.objects.get(
-                email=request.data.get("email_instance"))
-            instance.delete()
+            print(request.data)
+            instance = User.objects.get(email=request.data["email_instance"])
+            instance.is_active = not instance.is_active
+            instance.save()
             return HttpResponse(status=HTTP_200_OK)
         except:
             msg = _('El usuario no existe.')
@@ -547,47 +554,52 @@ class RecoveryPasswordAPI(APIView):
         """
 
         password = request.data.get("password")
-        user = jwt_decode_handler(token)
-        user = User.objects.get(email=user.get("username"))
-        if user is None or password is None:
-            msg = _('El usuario no existe.')
-            raise exceptions.NotFound(msg)
-        user.set_password(password)
-        user.save()
-        return HttpResponse(status=HTTP_200_OK)
+        try:
+            user = jwt_decode_handler(token)
+            user = User.objects.get(email=user.get("username"))
+            if user is None or password is None:
+                msg = _('El usuario no existe.')
+                raise exceptions.NotFound(msg)
+            user.set_password(password)
+            user.save()
+        except:
+            msg = _('El token ha expirado.')
+            raise exceptions.NotAuthenticated(msg)
+        return JsonResponse({"detail": "Contraseña cambiada con exito."}, status=HTTP_202_ACCEPTED, content_type="application/json")
 
-    def put(self, request, format=None):
-        """Permite solicitar mediante correo una nueva contraseña
 
-        Parameters
-        - - - - -
-        request : object
-            Objeto de solicitud que contiene el correo
+def put(self, request, format=None):
+    """Permite solicitar mediante correo una nueva contraseña
 
-        token : str
-            Token actual del usuario
+    Parameters
+    - - - - -
+    request : object
+        Objeto de solicitud que contiene el correo
 
-        Returns
-        - - - - -
-        HttpResponse
-            El status 200 OK
+    token : str
+        Token actual del usuario
 
-        Raises
-        - - - - -
-        NotFound
-            El usuario no existe
-        """
+    Returns
+    - - - - -
+    HttpResponse
+        El status 200 OK
 
-        email = request.data.get("email")
-        user = User.objects.get(email=email)
-        if user is None:
-            msg = _('El usuario no existe.')
-            raise exceptions.NotFound(msg)
-        # Create token user.
-        jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
-        jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
-        payload = jwt_payload_handler(user)
-        token = jwt_encode_handler(payload)
-        # Send email user.
-        user.send_recovery_password(token)
-        return HttpResponse(status=HTTP_200_OK)
+    Raises
+    - - - - -
+    NotFound
+        El usuario no existe
+    """
+
+    email = request.data.get("email")
+    user = User.objects.get(email=email)
+    if user is None:
+        msg = _('El usuario no existe.')
+        raise exceptions.NotFound(msg)
+    # Create token user.
+    jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+    jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+    payload = jwt_payload_handler(user)
+    token = jwt_encode_handler(payload)
+    # Send email user.
+    user.send_recovery_password(token)
+    return HttpResponse(status=HTTP_200_OK)

@@ -42,3 +42,10 @@ def careful_ip(request, username):
     if user:
         msg = _('Contraseña incorrecta.')
         raise exceptions.PermissionDenied(msg)
+    
+def translate(e):
+    string = "{}".format(e.__cause__).split(" ")[3].split(".")[1]
+    if string == 'email':
+        return "correo"
+    elif string == 'user_id':
+        return 'identificación'
