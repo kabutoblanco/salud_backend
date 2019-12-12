@@ -75,8 +75,9 @@ class UserAccessAPI(APIView):
         """
 
         # TODO implements token.
-        username = request.data.get("email")
-        password = request.data.get("password")
+        username = request.data["email"]
+        password = request.data["password"]
+        print(password)
         user = authenticate(username=username, password=password)
         if not user:
             careful_ip(request, username)
@@ -566,7 +567,6 @@ class RecoveryPasswordAPI(APIView):
             msg = _('El token ha expirado.')
             raise exceptions.NotAuthenticated(msg)
         return JsonResponse({"detail": "Contraseña cambiada con exito."}, status=HTTP_202_ACCEPTED, content_type="application/json")
-
 
     def put(self, request, format=None):
         """Permite solicitar mediante correo una nueva contraseña
