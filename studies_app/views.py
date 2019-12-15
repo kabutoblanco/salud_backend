@@ -121,6 +121,9 @@ class ListStudiesAPI(APIView):
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
     
 class CrudStudyCentersAPI(APIView):
+    """Clase que provee funciones para la relacion entre un estudio y varios centros
+    """
+    
     permission_classes = (StudyCentersAccessPermission, )
     
     def post(self, request, format=None):
@@ -171,6 +174,9 @@ class CrudStudyCentersAPI(APIView):
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
 class CrudStudyUsersAPI(APIView):
+    """Clase que provee funciones para la relacion entre un estudio y varios usuarios
+    """
+    
     permission_classes = (StudyUsersAccessPermission, )
     
     def post(self, request, format=None):
@@ -208,7 +214,11 @@ class CrudStudyUsersAPI(APIView):
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
     
+ 
 class CrudUserStudiesAPI(APIView):
+    """Clase que provee funciones para la relacion entre un usuario y varios estudios
+    """
+    
     permission_classes = (StudyUsersAccessPermission, )
     
     def get(self, request, user_id, format=None):

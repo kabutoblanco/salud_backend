@@ -57,6 +57,10 @@ class UserManager(BaseUserManager):
         administrator.save()
         administrator.user_permissions.add(
             Permission.objects.get(codename="view_user"))
+        administrator.user_permissions.add(
+            Permission.objects.get(codename="view_center"))
+        administrator.user_permissions.add(
+            Permission.objects.get(codename="view_department"))
         administrator.send_create_password(password)
         return administrator
 
@@ -91,6 +95,10 @@ class UserManager(BaseUserManager):
         simple.set_password(password)
         simple.is_simple = True
         simple.save()
+        simple.user_permissions.add(
+            Permission.objects.get(codename="view_center"))
+        simple.user_permissions.add(
+            Permission.objects.get(codename="view_department"))
         simple.send_create_password(password)
         return simple
 
