@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from users_app.models import User
 
 # Create your views here.
 from django.http import HttpResponse, JsonResponse
@@ -31,6 +31,7 @@ import json
 import jwt
 import datetime
 
+
 class CrudStudiesAPI(APIView):
     """
     Clase que provee servicios CRUD de usuarios add:POST remove:DELETE put:UPDATE read:GET
@@ -56,24 +57,24 @@ class CrudStudiesAPI(APIView):
     get(request, study_id)
         Permite obtener un estudio
     """
-    
+
     permission_classes = (StudyAccessPermission, )
-    
+
     def post(self, request, format=None):
         """Permite registrar un nuevo estudio
         """
-        
+
         study = request.data["study"]
         print(study)
         serializer = StudySerializer(data=study)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return HttpResponse(status=HTTP_201_CREATED)
-    
+
     def put(self, request, format=None):
         """Permite actualizar un estudio
         """
-        
+
         study = request.data["study"]
         study_id = request.data["study_id"]
         try:
@@ -85,11 +86,11 @@ class CrudStudiesAPI(APIView):
         if serializer.is_valid(raise_exception=True):
             study = serializer.save()
         return HttpResponse(status=HTTP_200_OK)
-    
+
     def delete(self, request, study_id, format=None):
         """Permite activar o desactivar un estudio segun sea el caso
         """
-        
+
         try:
             instance = Study.objects.get(id=study_id)
             instance.is_active = not instance.is_active
@@ -98,48 +99,50 @@ class CrudStudiesAPI(APIView):
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
-        
+
     def get(self, request, study_id, format=None):
         """Permite obtener un estudio
         """
-        
+
         try:
             instance = Study.objects.get(id=study_id)
             instance = decoder.serialize("json", [instance])
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
-        return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")        
-        
-    
+        return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
+
+
 class ListStudiesAPI(APIView):
     permission_classes = (StudyAccessPermission, )
-    
+
     def get(self, request, format=None):
-        instances = Study.objects.all().values("id", "study_id", "title_little", "status", "date_reg", "date_in_study", "date_trueaout_end", "manager_reg", "manager_reg__first_name", "principal_inv", "principal_inv__first_name", "is_active")
+        instances = Study.objects.all().values("id", "study_id", "title_little", "status", "date_reg", "date_in_study",
+                                               "date_trueaout_end", "manager_reg", "manager_reg__first_name", "principal_inv", "principal_inv__first_name", "is_active")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
-    
+
+
 class CrudStudyCentersAPI(APIView):
     """Clase que provee funciones para la relacion entre un estudio y varios centros
     """
-    
+
     permission_classes = (StudyCentersAccessPermission, )
-    
+
     def post(self, request, format=None):
         """Permite registrar un centro al estudio
         """
-        
+
         study = request.data["study"]
         serializer = StudyCentersSerializer(data=study)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return HttpResponse(status=HTTP_201_CREATED)
-    
+
     def put(self, request, format=None):
         """Permite modificar una tupla estudio centro
         """
-        
+
         study = request.data["study"]
         study_id = request.data["study_instance"]
         try:
@@ -151,11 +154,11 @@ class CrudStudyCentersAPI(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
         return HttpResponse(status=HTTP_200_OK)
-    
+
     def delete(self, request, study_id, format=None):
         """Permite desactivar una tupla estudio centro
         """
-        
+
         try:
             instance = StudyCenters.objects.get(id=study_id)
             instance.is_active = not instance.is_active
@@ -164,31 +167,45 @@ class CrudStudyCentersAPI(APIView):
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
-    
+
     def get(self, request, study_id, format=None):
         """Permite obtener todas las tuplas estudio centro
         """
-        
-        instances = StudyCenters.objects.filter(study_id=study_id).values("study_id", "center_id", "study_id__title_little", "center_id__name")
+
+        instances = StudyCenters.objects.filter(study_id=study_id).values(
+            "study_id", "center_id", "study_id__title_little", "center_id__name")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+
 
 class CrudStudyUsersAPI(APIView):
     """Clase que provee funciones para la relacion entre un estudio y varios usuarios
     """
-    
+
     permission_classes = (StudyUsersAccessPermission, )
-    
+
     def post(self, request, format=None):
         study = request.data["study"]
+        permissions = request.data["permissions"]
         serializer = StudyUsersSerializer(data=study)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-        return HttpResponse(status=HTTP_201_CREATED)
-    
+        is_permission = []
+        if not study.get("is_manager"):
+            newUser = User.objects.get(pk=study.get("user_id"))
+            for permission in permissions:
+                try:
+                    newUser.user_permissions.add(
+                        Permission.objects.get(codename=permission.get("name")))
+                except Permission.DoesNotExist:
+                    is_permission.append(permission.get("name"))
+        return JsonResponse({"detail": is_permission}, status=HTTP_201_CREATED, content_type="application/json")
+
     def put(self, request, format=None):
         study = request.data["study"]
         study_id = request.data["study_instance"]
+        permissions_add = request.data["permissions_add"]
+        permissions_remove = request.data["permissions_remove"]
         try:
             instance = StudyUsers.objects.get(id=study_id)
         except:
@@ -197,8 +214,24 @@ class CrudStudyUsersAPI(APIView):
         serializer = StudyUsersSerializer(instance, data=study)
         if serializer.is_valid(raise_exception=True):
             serializer.save()
+            user = User.objects.get(pk=study.get("user_id"))
+            if permissions_remove is not None:
+                for permission_remove in permissions_remove:
+                    try:
+                        user.user_permissions.remove(Permission.objects.get(
+                            codename=permission_remove.get("name")))
+                    except:
+                        is_permission.append(permission_remove.get("name"))
+
+            if permissions_add is not None:
+                for permission_add in permissions_add:
+                    try:
+                        user.user_permissions.add(Permission.objects.get(
+                            codename=permission_add.get("name")))
+                    except:
+                        is_permission.append(permission_add.get("name"))
         return HttpResponse(status=HTTP_200_OK)
-    
+
     def delete(self, request, study_id, format=None):
         try:
             instance = StudyUsers.objects.get(id=study_id)
@@ -208,21 +241,22 @@ class CrudStudyUsersAPI(APIView):
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
-    
+
     def get(self, request, study_id, format=None):
-        instances = StudyUsers.objects.filter(study_id=study_id).values("study_id", "user_id", "study_id__title_little", "user_id__email")
+        instances = StudyUsers.objects.filter(study_id=study_id).values(
+            "study_id", "user_id", "study_id__title_little", "user_id__email")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
-    
- 
+
+
 class CrudUserStudiesAPI(APIView):
     """Clase que provee funciones para la relacion entre un usuario y varios estudios
     """
-    
+
     permission_classes = (StudyUsersAccessPermission, )
-    
+
     def get(self, request, user_id, format=None):
-        instances = StudyUsers.objects.filter(user_id=user_id).values("study_id", "user_id", "study_id__title_little", "user_id__email")
+        instances = StudyUsers.objects.filter(user_id=user_id).values(
+            "study_id", "user_id", "study_id__title_little", "user_id__email")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
-        

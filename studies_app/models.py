@@ -90,18 +90,36 @@ class StudyManager(BaseUserManager):
         study.save()
         return study
 
-    def create_studyUsers(self, study_id, user_id):
+    def create_studyUsers(self, study_id, user_id, date_maxAccess, role, is_manager):
         """Crea una relación entre `Study` y `User`"""
 
-        study = StudyUsers(study_id=study_id, user_id=user_id)
-        study.save()
+        study = StudyUsers(study_id=study_id, user_id=user_id,
+                           date_maxAccess=date_maxAccess, role=role)
+        study.save()     
+        if is_manager:
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_parameterization"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_questionnaire"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_analysis"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="chage_control"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_observer"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_registry"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_member"))
+            user_id.user_permissions.add(
+                Permission.objects.get(codename="change_centerStudy"))
         return study
 
 
 class Study(models.Model):
     """
     Clase usada para representar un `Study`
-    
+
     ...
 
     Attributes
@@ -179,7 +197,7 @@ class Study(models.Model):
     objects = StudyManager()
 
     def __str__(self):
-        return '{}'.format(self.title_little)
+        return '{} - {}'.format(self.id, self.title_little)
 
     class Meta:
         verbose_name = 'Estudio'
@@ -189,7 +207,7 @@ class Study(models.Model):
 class StudyCenters(models.Model):
     """
     Clase usada para representar la relación entre un `Study` y `Center`
-    
+
     ...
 
     Attributes
@@ -201,7 +219,7 @@ class StudyCenters(models.Model):
     is_active : boolean
         Indica si esta activo
     """
-    
+
     study_id = models.ForeignKey(Study, on_delete=models.CASCADE)
     center_id = models.ForeignKey(Center, on_delete=models.CASCADE)
     is_active = models.BooleanField(default=True)
@@ -221,7 +239,7 @@ class StudyCenters(models.Model):
 class StudyUsers(models.Model):
     """
     Clase usada para representar la relación entre un `Study` y `User`
-    
+
     ...
 
     Attributes
@@ -230,12 +248,28 @@ class StudyUsers(models.Model):
         Pk usuario asociado
     user_id : int
         Pk usuario asociado
+    date_maxAccess : date
+        Fecha máxima de acceso
+    role : int
+        Role del participante
+        1 : GESTOR
+        2 : INVESTIGADOR
+        3 : TECNICO
     is_active : boolean
         Indica si esta activo
     """
-    
+
+    ACCESS_CHOICES = (
+        (1, _("GESTOR")),
+        (2, _("INVESTIGADOR")),
+        (3, _("TECNICO"))
+    )
+
     study_id = models.ForeignKey(Study, on_delete=models.CASCADE)
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_maxAccess = models.DateField(auto_now=False, blank=True, null=True)
+    role = models.IntegerField(choices=ACCESS_CHOICES, default=1)
+    is_manager = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     objects = StudyManager()
