@@ -275,7 +275,7 @@ class StudyUsers(models.Model):
     objects = StudyManager()
 
     def __str__(self):
-        return '{}'.format(self.user_id)
+        return '{}'.format(self.pk)
 
     class Meta:
         verbose_name = 'Usuario'

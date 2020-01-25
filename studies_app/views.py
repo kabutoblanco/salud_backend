@@ -207,7 +207,7 @@ class CrudStudyUsersAPI(APIView):
         permissions_add = request.data["permissions_add"]
         permissions_remove = request.data["permissions_remove"]
         try:
-            instance = StudyUsers.objects.get(id=study_id)
+            instance = StudyUsers.objects.get(pk=study_id)
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
