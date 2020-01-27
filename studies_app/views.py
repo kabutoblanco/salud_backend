@@ -9,6 +9,7 @@ from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 
+from .models import PermissionStudy
 from .serializers import *
 from .backends import StudyAccessPermission, StudyCentersAccessPermission, StudyUsersAccessPermission
 
@@ -192,11 +193,11 @@ class CrudStudyUsersAPI(APIView):
             serializer.save()
         is_permission = []
         if not study.get("is_manager"):
-            newUser = User.objects.get(pk=study.get("user_id"))
             for permission in permissions:
                 try:
-                    newUser.user_permissions.add(
-                        Permission.objects.get(codename=permission.get("name")))
+                    permission = PermissionStudy(studyUser_id=study.get("user_id"), permission_id=Permission.objects.get(
+                        codename=permission.get("name")))
+                    permission.save()
                 except Permission.DoesNotExist:
                     is_permission.append(permission.get("name"))
         return JsonResponse({"detail": is_permission}, status=HTTP_201_CREATED, content_type="application/json")
@@ -212,24 +213,25 @@ class CrudStudyUsersAPI(APIView):
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
         serializer = StudyUsersSerializer(instance, data=study)
+        is_permission = []
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            user = User.objects.get(pk=study.get("user_id"))
-            if permissions_remove is not None:
-                for permission_remove in permissions_remove:
-                    try:
-                        user.user_permissions.remove(Permission.objects.get(
-                            codename=permission_remove.get("name")))
-                    except:
-                        is_permission.append(permission_remove.get("name"))
+            for permission_remove in permissions_remove:                
+                try:
+                    permission = PermissionStudy.objects.get(studyUser_id=study_id, permission_id=Permission.objects.get(
+                        codename=permission_remove.get("name")))                    
+                    print(permission)
+                    permission.delete()                    
+                except:
+                    is_permission.append(permission_remove.get("name"))
 
-            if permissions_add is not None:
-                for permission_add in permissions_add:
-                    try:
-                        user.user_permissions.add(Permission.objects.get(
-                            codename=permission_add.get("name")))
-                    except:
-                        is_permission.append(permission_add.get("name"))
+            for permission_add in permissions_add:
+                try:
+                    permission = PermissionStudy(studyUser_id=study_id, permission_id=Permission.objects.get(
+                        codename=permission_add.get("name")))
+                    permission.save()
+                except:
+                    is_permission.append(permission_add.get("name"))
         return HttpResponse(status=HTTP_200_OK)
 
     def delete(self, request, study_id, format=None):
@@ -244,7 +246,7 @@ class CrudStudyUsersAPI(APIView):
 
     def get(self, request, study_id, format=None):
         instances = StudyUsers.objects.filter(study_id=study_id).values(
-            "study_id", "user_id", "study_id__title_little", "user_id__email")
+            "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
@@ -257,6 +259,7 @@ class CrudUserStudiesAPI(APIView):
 
     def get(self, request, user_id, format=None):
         instances = StudyUsers.objects.filter(user_id=user_id).values(
-            "study_id", "user_id", "study_id__title_little", "user_id__email")
+            "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+    

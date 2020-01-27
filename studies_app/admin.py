@@ -8,3 +8,4 @@ from .models import *
 admin.site.register(Study)
 admin.site.register(StudyCenters)
 admin.site.register(StudyUsers)
+admin.site.register(PermissionStudy)

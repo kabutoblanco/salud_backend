@@ -95,24 +95,34 @@ class StudyManager(BaseUserManager):
 
         study = StudyUsers(study_id=study_id, user_id=user_id,
                            date_maxAccess=date_maxAccess, role=role)
-        study.save()     
+        study.save()
+        print(Permission.objects.get(
+            codename="change_parameterization"))
         if is_manager:
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_parameterization"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_questionnaire"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_analysis"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="chage_control"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_observer"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_registry"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_member"))
-            user_id.user_permissions.add(
-                Permission.objects.get(codename="change_centerStudy"))
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_parameterization"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_questionnaire"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_analysis"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_control"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_observer"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_registry"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_member"))
+            permission.save()
+            permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
+                codename="change_centerStudy"))
+            permission.save()
         return study
 
 
@@ -282,3 +292,15 @@ class StudyUsers(models.Model):
         verbose_name_plural = 'Usuarios'
 
         unique_together = ("study_id", "user_id")
+
+
+class PermissionStudy(models.Model):
+    studyUser_id = models.ForeignKey(StudyUsers, on_delete=models.CASCADE)
+    permission_id = models.ForeignKey(Permission, on_delete=models.CASCADE)
+    
+    def __str__(self):
+        return '{} - {}'.format(self.permission_id, self.studyUser_id)
+
+    class Meta:
+        verbose_name = 'Permiso'
+        verbose_name_plural = 'Permisos'
