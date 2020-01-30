@@ -216,12 +216,12 @@ class CrudStudyUsersAPI(APIView):
         is_permission = []
         if serializer.is_valid(raise_exception=True):
             serializer.save()
-            for permission_remove in permissions_remove:                
+            for permission_remove in permissions_remove:
                 try:
                     permission = PermissionStudy.objects.get(studyUser_id=study_id, permission_id=Permission.objects.get(
-                        codename=permission_remove.get("name")))                    
+                        codename=permission_remove.get("name")))
                     print(permission)
-                    permission.delete()                    
+                    permission.delete()
                 except:
                     is_permission.append(permission_remove.get("name"))
 
@@ -246,7 +246,7 @@ class CrudStudyUsersAPI(APIView):
 
     def get(self, request, study_id, format=None):
         instances = StudyUsers.objects.filter(study_id=study_id).values(
-            "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
+            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
@@ -259,7 +259,30 @@ class CrudUserStudiesAPI(APIView):
 
     def get(self, request, user_id, format=None):
         instances = StudyUsers.objects.filter(user_id=user_id).values(
-            "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
+            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
-    
+
+
+class CrudPermissionsAPI(APIView):
+    """Clase que provee funciones para la relación entre el usuario de un estudio y sus permisos"""
+
+    def get(self, request, study_id, format=None):
+        instances = PermissionStudy.objects.filter(
+            studyUser_id=study_id).values("id", "permission_id", "permission_id__codename")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+
+
+class CrudStudyUserViewAPI(APIView):
+    """Clase que provee la vista para traer la información completa de los detalles del usuario"""
+
+    def get(self, request, study_id, format=None):
+        try:
+            instance = StudyUsers.objects.filter(id=study_id).values("id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "is_active")
+            instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
+        except:
+            msg = _('El estudio no existe.')
+            raise exceptions.NotFound(msg)
+        return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
+
