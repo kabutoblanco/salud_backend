@@ -96,8 +96,6 @@ class StudyManager(BaseUserManager):
         study = StudyUsers(study_id=study_id, user_id=user_id,
                            date_maxAccess=date_maxAccess, role=role)
         study.save()
-        print(Permission.objects.get(
-            codename="change_parameterization"))
         if is_manager:
             permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
                 codename="change_parameterization"))

@@ -66,10 +66,9 @@ class CrudStudiesAPI(APIView):
         """
 
         study = request.data["study"]
-        print(study)
         serializer = StudySerializer(data=study)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            serializer = serializer.save()
         return HttpResponse(status=HTTP_201_CREATED)
 
     def put(self, request, format=None):
