@@ -12,11 +12,15 @@ class StudySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         study = Study.objects.create_study(**validated_data)
         # Agrega los manager del proyecto a la relacion Study User con sus respectivos permisos
-        StudyUsers.objects.create_studyUsers(study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
-        StudyUsers.objects.create_studyUsers(study_id=study, user_id=study.principal_inv, date_maxAccess=None, role=1, is_manager=1)
+        StudyUsers.objects.create_studyUsers(
+            study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
+        StudyUsers.objects.create_studyUsers(
+            study_id=study, user_id=study.principal_inv, date_maxAccess=None, role=1, is_manager=1)
         return study
 
     def update(self, instance, validated_data):
+        StudyUsers.objects.remove_permissions(study_id=instance, user_id=instance.principal_inv)
+        StudyUsers.objects.get(study_id=instance, user_id=instance.principal_inv).delete()
         instance.title_little = validated_data.get(
             "title_little", instance.title_little)
         instance.title_long = validated_data.get(
@@ -39,6 +43,8 @@ class StudySerializer(serializers.ModelSerializer):
         instance.manager_2 = validated_data.get(
             "manager_2", instance.manager_2)
         instance.save()
+        StudyUsers.objects.create_studyUsers(
+            study_id=instance, user_id=instance.principal_inv, date_maxAccess=None, role=1, is_manager=1)
         return instance
 
 

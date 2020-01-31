@@ -94,7 +94,7 @@ class StudyManager(BaseUserManager):
         """Crea una relación entre `Study` y `User`"""
 
         study = StudyUsers(study_id=study_id, user_id=user_id,
-                           date_maxAccess=date_maxAccess, role=role)
+                           date_maxAccess=date_maxAccess, role=role, is_manager=is_manager)
         study.save()
         if is_manager:
             permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
@@ -122,6 +122,11 @@ class StudyManager(BaseUserManager):
                 codename="change_centerStudy"))
             permission.save()
         return study
+
+    def remove_permissions(self, study_id, user_id):
+        studyUser = StudyUsers.objects.get(study_id=study_id, user_id=user_id) 
+        PermissionStudy.objects.filter(studyUser_id=studyUser).delete()
+        
 
 
 class Study(models.Model):
