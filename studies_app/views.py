@@ -245,7 +245,7 @@ class CrudStudyUsersAPI(APIView):
 
     def get(self, request, study_id, format=None):
         instances = StudyUsers.objects.filter(study_id=study_id).values(
-            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
+            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "user_id__first_name", "user_id__last_name", "is_active", "role", "is_manager", "date_maxAccess")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
@@ -258,7 +258,7 @@ class CrudUserStudiesAPI(APIView):
 
     def get(self, request, user_id, format=None):
         instances = StudyUsers.objects.filter(user_id=user_id).values(
-            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "role", "is_manager")
+            "id", "study_id", "user_id", "study_id__title_little", "user_id__email", "user_id__first_name", "user_id__last_name", "is_active", "role", "is_manager", "date_maxAccess")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 

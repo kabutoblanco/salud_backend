@@ -19,6 +19,7 @@ class StudySerializer(serializers.ModelSerializer):
         return study
 
     def update(self, instance, validated_data):
+        # Elimina los permisos del usuario anterior y lo elimina de la relación con el estudio
         StudyUsers.objects.remove_permissions(study_id=instance, user_id=instance.principal_inv)
         StudyUsers.objects.get(study_id=instance, user_id=instance.principal_inv).delete()
         instance.title_little = validated_data.get(
@@ -43,6 +44,7 @@ class StudySerializer(serializers.ModelSerializer):
         instance.manager_2 = validated_data.get(
             "manager_2", instance.manager_2)
         instance.save()
+        # Agrega el nuevo usuario con el estudio
         StudyUsers.objects.create_studyUsers(
             study_id=instance, user_id=instance.principal_inv, date_maxAccess=None, role=1, is_manager=1)
         return instance
@@ -75,5 +77,8 @@ class StudyUsersSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.study_id = validated_data.get("study_id", instance.study_id)
         instance.user_id = validated_data.get("user_id", instance.user_id)
+        instance.role = validate_data.get("role", instance.role)
+        instance.date_maxAccess = validated_data.get("date_maxAccess", instance.date_maxAccess)
+        instance.is_active = validated_date.get("is_active", instace.is_active)
         instance.save()
         return instance
