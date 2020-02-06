@@ -9,7 +9,7 @@ from django.core import serializers as decoder
 from django.core.serializers.json import DjangoJSONEncoder
 from django.utils.translation import ugettext as _
 
-from .models import PermissionStudy
+from .models import PermissionStudy, StudyUsers
 from .serializers import *
 from .backends import StudyAccessPermission, StudyCentersAccessPermission, StudyUsersAccessPermission
 
@@ -189,12 +189,14 @@ class CrudStudyUsersAPI(APIView):
         permissions = request.data["permissions"]
         serializer = StudyUsersSerializer(data=study)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
+            userStudy = serializer.save()
+        print(userStudy.id)
         is_permission = []
         if not study.get("is_manager"):
             for permission in permissions:
                 try:
-                    permission = PermissionStudy(studyUser_id=study.get("user_id"), permission_id=Permission.objects.get(
+                    user = StudyUsers.objects.get(pk=userStudy.id)
+                    permission = PermissionStudy(studyUser_id=user, permission_id=Permission.objects.get(
                         codename=permission.get("name")))
                     permission.save()
                 except Permission.DoesNotExist:
@@ -278,10 +280,10 @@ class CrudStudyUserViewAPI(APIView):
 
     def get(self, request, study_id, format=None):
         try:
-            instance = StudyUsers.objects.filter(id=study_id).values("id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "is_active")
+            instance = StudyUsers.objects.filter(id=study_id).values(
+                "id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "is_active")
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
         except:
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
         return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
-
