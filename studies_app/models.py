@@ -291,8 +291,8 @@ class StudyUsers(models.Model):
         return '{} | {} : {}'.format(self.pk, self.study_id, self.user_id)
 
     class Meta:
-        verbose_name = 'Usuario'
-        verbose_name_plural = 'Usuarios'
+        verbose_name = 'Miembro'
+        verbose_name_plural = 'Miembros'
 
         unique_together = ("study_id", "user_id")
 

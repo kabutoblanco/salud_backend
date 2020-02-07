@@ -281,7 +281,7 @@ class CrudStudyUserViewAPI(APIView):
     def get(self, request, study_id, format=None):
         try:
             instance = StudyUsers.objects.filter(id=study_id).values(
-                "id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "is_active")
+                "id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "role", "is_active")
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
         except:
             msg = _('El estudio no existe.')
