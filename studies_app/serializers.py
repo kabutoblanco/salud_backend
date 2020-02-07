@@ -12,16 +12,23 @@ class StudySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         study = Study.objects.create_study(**validated_data)
         # Agrega los manager del proyecto a la relacion Study User con sus respectivos permisos
-        StudyUsers.objects.create_studyUsers(
-            study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
-        StudyUsers.objects.create_studyUsers(
-            study_id=study, user_id=study.principal_inv, date_maxAccess=None, role=1, is_manager=1)
+        if study.manager_reg == study.principal_inv:
+            StudyUsers.objects.create_studyUsers(
+                study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
+        else:
+            StudyUsers.objects.create_studyUsers(
+                study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
+            StudyUsers.objects.create_studyUsers(
+                study_id=study, user_id=study.principal_inv, date_maxAccess=None, role=1, is_manager=2)
         return study
 
     def update(self, instance, validated_data):
         # Elimina los permisos del usuario anterior y lo elimina de la relación con el estudio
-        StudyUsers.objects.remove_permissions(study_id=instance, user_id=instance.principal_inv)
-        StudyUsers.objects.get(study_id=instance, user_id=instance.principal_inv).delete()
+        try:
+            member = StudyUsers.objects.get(
+                study_id=instance, user_id=instance.principal_inv, is_manager=2).delete()
+        except:
+            pass
         instance.title_little = validated_data.get(
             "title_little", instance.title_little)
         instance.title_long = validated_data.get(
@@ -45,8 +52,9 @@ class StudySerializer(serializers.ModelSerializer):
             "manager_2", instance.manager_2)
         instance.save()
         # Agrega el nuevo usuario con el estudio
-        StudyUsers.objects.create_studyUsers(
-            study_id=instance, user_id=instance.principal_inv, date_maxAccess=None, role=1, is_manager=1)
+        if instance.manager_reg is not instance.principal_inv:
+            StudyUsers.objects.create_studyUsers(
+                study_id=instance, user_id=instance.principal_inv, date_maxAccess=None, role=1, is_manager=2)
         return instance
 
 
@@ -78,7 +86,8 @@ class StudyUsersSerializer(serializers.ModelSerializer):
         instance.study_id = validated_data.get("study_id", instance.study_id)
         instance.user_id = validated_data.get("user_id", instance.user_id)
         instance.role = validate_data.get("role", instance.role)
-        instance.date_maxAccess = validated_data.get("date_maxAccess", instance.date_maxAccess)
+        instance.date_maxAccess = validated_data.get(
+            "date_maxAccess", instance.date_maxAccess)
         instance.is_active = validated_date.get("is_active", instace.is_active)
         instance.save()
         return instance

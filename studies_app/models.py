@@ -271,6 +271,12 @@ class StudyUsers(models.Model):
     is_active : boolean
         Indica si esta activo
     """
+    
+    GENERAL_CHOICES = (
+        (1, _("MANAGER")),
+        (2, _("INVESTIGADOR")),
+        (3, _("OTRO"))
+    )
 
     ACCESS_CHOICES = (
         (1, _("GESTOR")),
@@ -282,7 +288,7 @@ class StudyUsers(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     date_maxAccess = models.DateField(auto_now=False, blank=True, null=True)
     role = models.IntegerField(choices=ACCESS_CHOICES, default=1)
-    is_manager = models.BooleanField(default=False)
+    is_manager = models.IntegerField(choices=GENERAL_CHOICES, default=3)
     is_active = models.BooleanField(default=True)
 
     objects = StudyManager()
