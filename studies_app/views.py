@@ -192,7 +192,7 @@ class CrudStudyUsersAPI(APIView):
             userStudy = serializer.save()
         print(userStudy.id)
         is_permission = []
-        if not study.get("is_manager"):
+        if study.get("is_manager") == 3:
             for permission in permissions:
                 try:
                     user = StudyUsers.objects.get(pk=userStudy.id)
