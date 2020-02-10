@@ -218,18 +218,20 @@ class CrudStudyUsersAPI(APIView):
         if serializer.is_valid(raise_exception=True):
             serializer.save()
             for permission_remove in permissions_remove:
+                print(permission_remove.get('name'))
                 try:
-                    permission = PermissionStudy.objects.get(studyUser_id=study_id, permission_id=Permission.objects.get(
+                    user = StudyUsers.objects.get(pk=study_id)
+                    permission = PermissionStudy.objects.filter(studyUser_id=user, permission_id=Permission.objects.get(
                         codename=permission_remove.get("name")))
-                    print(permission)
                     permission.delete()
                 except:
                     is_permission.append(permission_remove.get("name"))
 
-            for permission_add in permissions_add:
+            for permission_add in permissions_add:                
                 try:
-                    permission = PermissionStudy(studyUser_id=study_id, permission_id=Permission.objects.get(
-                        codename=permission_add.get("name")))
+                    user = StudyUsers.objects.get(pk=study_id)
+                    permission = PermissionStudy(studyUser_id=user, permission_id=Permission.objects.get(
+                        codename=permission_add.get("name")))                    
                     permission.save()
                 except:
                     is_permission.append(permission_add.get("name"))
@@ -281,7 +283,7 @@ class CrudStudyUserViewAPI(APIView):
     def get(self, request, study_id, format=None):
         try:
             instance = StudyUsers.objects.filter(id=study_id).values(
-                "id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "role", "is_active")
+                "id", "study_id", "user_id", "user_id__first_name", "user_id__last_name", "date_maxAccess", "role", "is_active", "is_manager")
             instance = json.dumps(list(instance), cls=DjangoJSONEncoder)
         except:
             msg = _('El estudio no existe.')

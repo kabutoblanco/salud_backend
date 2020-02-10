@@ -85,9 +85,9 @@ class StudyUsersSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         instance.study_id = validated_data.get("study_id", instance.study_id)
         instance.user_id = validated_data.get("user_id", instance.user_id)
-        instance.role = validate_data.get("role", instance.role)
+        instance.role = validated_data.get("role", instance.role)
         instance.date_maxAccess = validated_data.get(
             "date_maxAccess", instance.date_maxAccess)
-        instance.is_active = validated_date.get("is_active", instace.is_active)
+        instance.is_active = validated_data.get("is_active", instance.is_active)
         instance.save()
         return instance
