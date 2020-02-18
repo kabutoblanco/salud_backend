@@ -140,6 +140,7 @@ class User(AbstractUser):
     email = models.EmailField(max_length=50, unique=True)
     password = models.CharField(max_length=236)
     is_simple = models.BooleanField(default=False)
+    is_confirm = models.BooleanField(default=False)
 
     my_center = models.ForeignKey(
         places.Center, on_delete=models.CASCADE, blank=True, null=True)

@@ -603,3 +603,12 @@ class RecoveryPasswordAPI(APIView):
         # Send email user.
         user.send_recovery_password(token)
         return HttpResponse(status=HTTP_200_OK)
+    
+class UserPublicAPI(APIView):
+    permission_classes = (IsAuthenticated, )
+    
+    def get(self, request, email_instance, format=None):
+        instances = User.objects.filter(email=email_instance).values("id", "email", "first_name", "last_name", "is_active", "is_confirm")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+    

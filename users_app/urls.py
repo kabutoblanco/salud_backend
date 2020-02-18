@@ -6,7 +6,7 @@ from .views import *
 
 extra_patterns = [
     path('all/', ListUsersAPI.as_view(), name="read_all"),
-    path('active/', ActiveUserAPI.as_view(), name="change_active"),
+    path('active/', ActiveUserAPI.as_view(), name="change_active")
 ]
 
 urlpatterns = [    
@@ -30,5 +30,7 @@ urlpatterns = [
     # RECOVERY PASSWORD
     path('password/recovery/', RecoveryPasswordAPI.as_view(), name="send_link"),
     path('password/<str:token>/', RecoveryPasswordAPI.as_view(), name="recovery"),
+    
+    path('user/<str:email_instance>/', UserPublicAPI.as_view(), name="info_user")
     # - - - - -
 ]
