@@ -11,11 +11,12 @@ extra_patterns = [
     path('user/<int:study_id>/', CrudStudyUsersAPI.as_view()),
     path('user/me/<int:user_id>/', CrudUserStudiesAPI.as_view()),
     path('user/permissions/<int:study_id>/', CrudPermissionsAPI.as_view()),
-    path('user/study/<int:study_id>/', CrudStudyUserViewAPI.as_view())
+    path('user/study/<int:study_id>/', CrudStudyUserViewAPI.as_view()),
 ]
 
 urlpatterns = [
     path('', include(extra_patterns)),
     path('', CrudStudiesAPI.as_view(), name="crud_write"),
     path('<int:study_id>/', CrudStudiesAPI.as_view(), name="crud_read"),
+    path('user/my/<str:email_instance>/', CrudMeStudiesAPI.as_view())
 ]

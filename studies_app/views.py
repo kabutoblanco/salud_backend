@@ -289,3 +289,15 @@ class CrudStudyUserViewAPI(APIView):
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
         return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
+    
+class CrudMeStudiesAPI(APIView):
+    """Clase que provee funciones para la relacion entre un usuario y varios estudios
+    """
+
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, email_instance, format=None):
+        instances = StudyUsers.objects.filter(user_id__email=email_instance).values(
+            "study_id", "study_id__title_little", "study_id__status", "study_id__date_reg", "study_id__date_reg", "date_maxAccess")
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")

@@ -11,14 +11,14 @@ class UserAdmin(BaseUserAdmin):
     fieldsets = (
         (None, {'fields': ('user_id', 'username', 'email', 'password')}),
         (_('Personal info'), {'fields': ('first_name', 'last_name', 'my_center', 'my_department')}),
-        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser',
+        (_('Permissions'), {'fields': ('is_active', 'is_staff', 'is_superuser', 'is_confirm',
                                        'groups', 'user_permissions')}),
         (_('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('user_id', 'email', 'username', 'password1', 'password2', 'is_superuser', 'is_staff', 'is_simple', 'my_center', 'my_department'),
+            'fields': ('user_id', 'email', 'username', 'password1', 'password2', 'is_superuser', 'is_staff', 'is_simple', 'is_confirm', 'my_center', 'my_department'),
         }),
     )
     list_display = ('id', 'email', 'first_name', 'last_name', 'is_staff', 'is_confirm')
