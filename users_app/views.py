@@ -612,3 +612,15 @@ class UserPublicAPI(APIView):
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
     
+class UserConfirmAPI(APIView):
+    permission_classes = (IsAuthenticated, )
+    
+    def post(self, request, format=None):
+        instance = User.objects.get(email=request.data["email_instance"])
+        user = request.data["user"]
+        serializer = UserConfirmSerializer(instance, data=user)
+        if serializer.is_valid(raise_exception=True):
+            user = serializer.save()
+        return HttpResponse(status=HTTP_200_OK)
+    
+    

@@ -74,3 +74,21 @@ class SimpleSerializer(serializers.ModelSerializer):
             "my_department", instance.my_department)
         instance.save()
         return instance
+    
+class UserConfirmSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("user_id", "first_name", "last_name", "password")
+        
+    def update(self, instance, validated_data):
+        instance.user_id = validated_data.get(
+            "user_id", instance.user_id)
+        instance.first_name = validated_data.get(
+            "first_name", instance.first_name)
+        instance.last_name = validated_data.get(
+            "last_name", instance.last_name)
+        instance.is_confirm = 1
+        instance.set_password(validated_data.get(
+            "password", instance.password))
+        instance.save()
+        return instance

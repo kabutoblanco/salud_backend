@@ -6,7 +6,8 @@ from .views import *
 
 extra_patterns = [
     path('all/', ListUsersAPI.as_view(), name="read_all"),
-    path('active/', ActiveUserAPI.as_view(), name="change_active")
+    path('active/', ActiveUserAPI.as_view(), name="change_active"),
+    path('confirm/', UserConfirmAPI.as_view(), name="confirm_user")
 ]
 
 urlpatterns = [    
