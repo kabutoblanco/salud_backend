@@ -185,21 +185,21 @@ class Study(models.Model):
         (1, _("ESTUDIO OBSERVACIONAL")),
         (2, _("ENSAYO CLINICO")),
         (3, _("ESTUDIO TIPO ENCUESTA")),
-        (1, _("OTROS ESTUDIOS"))
+        (4, _("OTROS ESTUDIOS"))
     )
     
     AUTONUM_CHOICES = (
         (1, _("NO")),
         (2, _("NO, POR CENTRO")),
         (3, _("SI")),
-        (1, _("SI, POR CENTRO"))
+        (4, _("SI, POR CENTRO"))
     )
     
     BLIND_CHOICES = (
         (1, _("NO")),
         (2, _("CIEGO")),
         (3, _("DOBLE CIEGO")),
-        (1, _("TRIPLE CIEGO"))
+        (4, _("TRIPLE CIEGO"))
     )
     
     FILTERACCESS_CHOICES = (
