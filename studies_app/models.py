@@ -122,10 +122,7 @@ class StudyManager(BaseUserManager):
                 codename="change_centerStudy"))
             permission.save()
         return study
-
-    def remove_permissions(self, study_id, user_id):
-        studyUser = StudyUsers.objects.get(study_id=study_id, user_id=user_id) 
-        PermissionStudy.objects.filter(studyUser_id=studyUser).delete()
+        
         
 
 
@@ -183,6 +180,39 @@ class Study(models.Model):
         (2, _("DISEÑO")),
         (3, _("FINALIZADO"))
     )
+    
+    TYPE_CHOICES = (
+        (1, _("ESTUDIO OBSERVACIONAL")),
+        (2, _("ENSAYO CLINICO")),
+        (3, _("ESTUDIO TIPO ENCUESTA")),
+        (1, _("OTROS ESTUDIOS"))
+    )
+    
+    AUTONUM_CHOICES = (
+        (1, _("NO")),
+        (2, _("NO, POR CENTRO")),
+        (3, _("SI")),
+        (1, _("SI, POR CENTRO"))
+    )
+    
+    BLIND_CHOICES = (
+        (1, _("NO")),
+        (2, _("CIEGO")),
+        (3, _("DOBLE CIEGO")),
+        (1, _("TRIPLE CIEGO"))
+    )
+    
+    FILTERACCESS_CHOICES = (
+        (1, _("POR CENTROS")),
+        (2, _("POR CATEGORIAS")),
+        (3, _("SIN FILTRO ACCESO"))
+    )
+    
+    DATAPARTICIPANT_CHOICES = (
+        (1, _("NO")),
+        (2, _("SI")),
+        (3, _("SI Y OBLIGATORIO"))
+    )
 
     study_id = models.CharField(max_length=50)
     title_little = models.CharField(max_length=50)
@@ -206,6 +236,22 @@ class Study(models.Model):
     manager_2 = models.ForeignKey(
         User, related_name="manager_2", on_delete=models.CASCADE, blank=True, null=True)
     is_active = models.BooleanField(default=True)
+    
+    # Section design study 
+    is_studyTest = models.BooleanField(default=True)
+    type_study = models.IntegerField(choices=TYPE_CHOICES, default=1)
+    num_participants = models.IntegerField(default=0)
+    trazability = models.BooleanField(default=False)
+    double_in = models.BooleanField(default=False)
+    control_double = models.BooleanField(default=True)
+    autonum = models.IntegerField(choices=AUTONUM_CHOICES, default=2)
+    is_random = models.BooleanField(default=False)
+    blind_study = models.IntegerField(choices=BLIND_CHOICES, default=1)
+    filter_access = models.IntegerField(choices=FILTERACCESS_CHOICES, default=1)
+    is_criterInclusion = models.BooleanField(default=False)
+    data_participant = models.IntegerField(choices=DATAPARTICIPANT_CHOICES, default=3)
+    is_habeasdata = models.BooleanField(default=False)
+    participant_id = models.IntegerField(default=0)
 
     objects = StudyManager()
 

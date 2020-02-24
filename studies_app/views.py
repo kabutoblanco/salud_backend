@@ -113,6 +113,23 @@ class CrudStudiesAPI(APIView):
         return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
 
 
+class CrudStudieDesignAPI(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def put(self, request, format=None):
+        study = request.data["study"]
+        study_id = request.data["study_id"]
+        try:
+            instance = Study.objects.get(id=study_id)
+        except:
+            msg = _('El estudio no existe.')
+            raise exceptions.NotFound(msg)
+        serializer = StudyDesignSerializer(instance, data=study)
+        if serializer.is_valid(raise_exception=True):
+            study = serializer.save()
+        return HttpResponse(status=HTTP_200_OK)
+
+
 class ListStudiesAPI(APIView):
     permission_classes = (StudyAccessPermission, )
 
@@ -227,11 +244,11 @@ class CrudStudyUsersAPI(APIView):
                 except:
                     is_permission.append(permission_remove.get("name"))
 
-            for permission_add in permissions_add:                
+            for permission_add in permissions_add:
                 try:
                     user = StudyUsers.objects.get(pk=study_id)
                     permission = PermissionStudy(studyUser_id=user, permission_id=Permission.objects.get(
-                        codename=permission_add.get("name")))                    
+                        codename=permission_add.get("name")))
                     permission.save()
                 except:
                     is_permission.append(permission_add.get("name"))
@@ -289,7 +306,8 @@ class CrudStudyUserViewAPI(APIView):
             msg = _('El estudio no existe.')
             raise exceptions.NotFound(msg)
         return HttpResponse(content=instance, status=HTTP_200_OK, content_type="application/json")
-    
+
+
 class CrudMeStudiesAPI(APIView):
     """Clase que provee funciones para la relacion entre un usuario y varios estudios
     """
@@ -298,6 +316,7 @@ class CrudMeStudiesAPI(APIView):
 
     def get(self, request, email_instance, format=None):
         instances = StudyUsers.objects.filter(user_id__email=email_instance).values(
-            "study_id", "study_id__title_little", "study_id__status", "study_id__date_reg", "study_id__date_reg", "date_maxAccess")
-        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
+            "study_id", "study_id__title_little", "study_id__status", "study_id__date_reg", "study_id__date_reg", "date_maxAccess",
+            "is_studyTest", "type_study", "num_participants", "trazability", "double_in", "control_double", "autonum", "is_random", "blind_study", "filter_access", "is_criterInclusion", "data_participant", "is_habeasdata", "participant_id")
+        instances=json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")

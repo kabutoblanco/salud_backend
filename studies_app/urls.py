@@ -18,5 +18,6 @@ urlpatterns = [
     path('', include(extra_patterns)),
     path('', CrudStudiesAPI.as_view(), name="crud_write"),
     path('<int:study_id>/', CrudStudiesAPI.as_view(), name="crud_read"),
-    path('user/my/<str:email_instance>/', CrudMeStudiesAPI.as_view())
+    path('user/my/<str:email_instance>/', CrudMeStudiesAPI.as_view(), name="crud_userme"),
+    path('design/', CrudStudieDesignAPI.as_view(), name="crud_desig_study")
 ]

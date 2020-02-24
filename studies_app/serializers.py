@@ -14,19 +14,19 @@ class StudySerializer(serializers.ModelSerializer):
         # Agrega los manager del proyecto a la relacion Study User con sus respectivos permisos
         if study.manager_reg == study.principal_inv:
             StudyUsers.objects.create_studyUsers(
-                study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
+                study_id=study, user_id=study.manager_reg, date_maxAccess=study.date_trueaout_end, role=1, is_manager=1)
         else:
             StudyUsers.objects.create_studyUsers(
-                study_id=study, user_id=study.manager_reg, date_maxAccess=None, role=1, is_manager=1)
+                study_id=study, user_id=study.manager_reg, date_maxAccess=study.date_trueaout_end, role=1, is_manager=1)
             StudyUsers.objects.create_studyUsers(
-                study_id=study, user_id=study.principal_inv, date_maxAccess=None, role=1, is_manager=2)
+                study_id=study, user_id=study.principal_inv, date_maxAccess=study.date_trueaout_end, role=1, is_manager=2)
         return study
 
     def update(self, instance, validated_data):
         # Elimina los permisos del usuario anterior y lo elimina de la relación con el estudio
         try:
             member = StudyUsers.objects.get(
-                study_id=instance, user_id=instance.principal_inv, is_manager=2).delete()
+                study_id=instance, user_id=instance.principal_inv).delete()
         except:
             pass
         instance.title_little = validated_data.get(
@@ -54,7 +54,32 @@ class StudySerializer(serializers.ModelSerializer):
         # Agrega el nuevo usuario con el estudio
         if instance.manager_reg is not instance.principal_inv:
             StudyUsers.objects.create_studyUsers(
-                study_id=instance, user_id=instance.principal_inv, date_maxAccess=None, role=1, is_manager=2)
+                study_id=instance, user_id=instance.principal_inv, date_maxAccess=instance.date_trueaout_end, role=1, is_manager=2)
+        return instance
+
+
+class StudyDesignSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Study
+        fields = ["is_studyTest", "type_study", "num_participants", "trazability", "double_in", "control_double", "autonum", "is_random",
+                  "blind_study", "filter_access", "is_criterInclusion", "data_participant", "is_habeasdata", "participant_id"]
+
+    def update(self, instance, validated_data):
+        instance.is_studyTest = validated_data.get("is_studyTest", instance.is_studyTest)
+        instance.type_study = validated_data.get("type_study", instance.type_study)
+        instance.num_participants = validated_data.get("num_participants", instance.num_participants)
+        instance.trazability = validated_data.get("trazability", instance.trazability)
+        instance.double_in = validated_data.get("double_in", instance.double_in)
+        instance.control_double = validated_data.get("control_double", instance.control_double)
+        instance.autonum = validated_data.get("autonum", instance.autonum)
+        instance.is_random = validated_data.get("is_random", instance.is_random)
+        instance.blind_study = validated_data.get("blind_study", instance.blind_study)
+        instance.filter_access = validated_data.get("filter_access", instance.filter_access)
+        instance.is_criterInclusion = validated_data.get("is_criterInclusion", instance.is_criterInclusion)
+        instance.data_participant = validated_data.get("data_participant", instance.data_participant)
+        instance.is_habeasdata = validated_data.get("is_habeasdata", instance.is_habeasdata)
+        instance.participant_id = validated_data.get("participant_id", instance.participant_id)
+        instance.save()
         return instance
 
 
@@ -88,6 +113,7 @@ class StudyUsersSerializer(serializers.ModelSerializer):
         instance.role = validated_data.get("role", instance.role)
         instance.date_maxAccess = validated_data.get(
             "date_maxAccess", instance.date_maxAccess)
-        instance.is_active = validated_data.get("is_active", instance.is_active)
+        instance.is_active = validated_data.get(
+            "is_active", instance.is_active)
         instance.save()
         return instance
