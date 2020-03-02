@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'users_app.apps.UsersAppConfig',
     'places_app.apps.PlacesAppConfig',
     'studies_app.apps.StudiesAppConfig',
+    'questionaries_app.apps.QuestionariesAppConfig',
     'corsheaders',
     'rest_framework',
     'rest_framework_jwt',

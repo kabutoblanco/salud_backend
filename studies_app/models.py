@@ -96,7 +96,7 @@ class StudyManager(BaseUserManager):
         study = StudyUsers(study_id=study_id, user_id=user_id,
                            date_maxAccess=date_maxAccess, role=role, is_manager=is_manager)
         study.save()
-        if is_manager == 1 or is_manager == 2:
+        if is_managerAbstractUser1 or is_manager == 2:
             permission = PermissionStudy(studyUser_id=study, permission_id=Permission.objects.get(
                 codename="change_parameterization"))
             permission.save()

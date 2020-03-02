@@ -12,6 +12,7 @@ extra_patterns = [
     path('user/me/<int:user_id>/', CrudUserStudiesAPI.as_view()),
     path('user/permissions/<int:study_id>/', CrudPermissionsAPI.as_view()),
     path('user/study/<int:study_id>/', CrudStudyUserViewAPI.as_view()),
+    path('center/count/<int:study_id>/', CountStudyCentersAPI.as_view())
 ]
 
 urlpatterns = [

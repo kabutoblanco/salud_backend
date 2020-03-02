@@ -195,6 +195,16 @@ class CrudStudyCentersAPI(APIView):
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
 
+class CountStudyCentersAPI(APIView):
+    permission_classes = (IsAuthenticated, )
+
+    def get(self, request, study_id, format=None):
+        """Permite obtener todas las tuplas estudio centro
+        """
+        instances = StudyCenters.objects.filter(study_id=study_id).count()
+        return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
+
+
 class CrudStudyUsersAPI(APIView):
     """Clase que provee funciones para la relacion entre un estudio y varios usuarios
     """

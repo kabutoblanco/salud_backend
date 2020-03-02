@@ -29,10 +29,10 @@ class CrudCentersAPI(APIView):
         return HttpResponse(status=HTTP_201_CREATED)
     
 class ListCentersAPI(APIView):
-    permission_classes = (IsAuthenticated, CenterAccessPermission, )
+    permission_classes = (IsAuthenticated, )
     def get(self, request, format=None):
-        instances = Center.objects.all()
-        instances = decoder.serialize("json", instances)
+        instances = Center.objects.all().values('pk', 'name')
+        instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="JSON")
     
 class CrudDepartmentsAPI(APIView):
@@ -47,7 +47,7 @@ class CrudDepartmentsAPI(APIView):
         return HttpResponse(status=HTTP_201_CREATED)
     
 class ListDeparmentsAPI(APIView):
-    permission_classes = (IsAuthenticated, DepartmentAccessPermission, )
+    permission_classes = (IsAuthenticated, )
     def get(self, request, format=None):
         instances = Department.objects.all()
         instances = decoder.serialize("json", instances)

@@ -21,4 +21,5 @@ urlpatterns = [
     path('users/', include('users_app.urls')),
     path('places/', include('places_app.urls')),
     path('studies/', include('studies_app.urls')),
+    path('questionaries/', include('questionaries_app.urls')),
 ]
