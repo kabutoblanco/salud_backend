@@ -327,6 +327,6 @@ class CrudMeStudiesAPI(APIView):
     def get(self, request, email_instance, format=None):
         instances = StudyUsers.objects.filter(user_id__email=email_instance).values(
             "study_id", "study_id__title_little", "study_id__status", "study_id__date_reg", "study_id__date_reg", "date_maxAccess",
-            "is_studyTest", "type_study", "num_participants", "trazability", "double_in", "control_double", "autonum", "is_random", "blind_study", "filter_access", "is_criterInclusion", "data_participant", "is_habeasdata", "participant_id")
+            "study_id__is_studyTest", "study_id__type_study", "study_id__num_participants", "study_id__trazability", "study_id__double_in", "study_id__control_double", "study_id__autonum", "study_id__is_random", "study_id__blind_study", "study_id__filter_access", "study_id__is_criterInclusion", "study_id__data_participant", "study_id__is_habeasdata", "study_id__participant_id")
         instances=json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
