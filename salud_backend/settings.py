@@ -34,7 +34,7 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_ORIGIN_WHITELIST = (
     "http://localhost:3000",
-    "https://clindesign-78918.firebaseapp.com"
+    "https://clindesign-78918.web.app"
 )
 
 # Application definition
