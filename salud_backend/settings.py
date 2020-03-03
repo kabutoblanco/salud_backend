@@ -22,7 +22,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = config('OLELO')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -38,9 +38,9 @@ CORS_ORIGIN_WHITELIST = (
 
 # Application definition
 
-EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_HOST = config('METELO')
 EMAIL_PORT = 587
-EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_USER = config('PAPI_RICO')
 EMAIL_HOST_PASSWORD = config('MAMI_RICA')
 EMAIL_USE_TLS = True
 
