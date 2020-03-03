@@ -57,13 +57,13 @@ class StudyAccessPermission(permissions.BasePermission):
             email=get_user_token(request).get("email"))
         if user_request:
             if request.method in permissions.SAFE_METHODS:
-                if user_request.has_perm("users_app.view_study"):
+                if user_request.has_perm("studies_app.view_study"):
                     return True
             elif request.method is DELETE:
-                if user_request.has_perm("users_app.delete_study"):
+                if user_request.has_perm("studies_app.delete_study"):
                     return True
             else:
-                if user_request.has_perm("users_app.add_study") and user_request.has_perm("users_app.change_study"):
+                if user_request.has_perm("studies_app.add_study") and user_request.has_perm("studies_app.change_study"):
                     return True
             return False
         else:
@@ -108,13 +108,13 @@ class StudyCentersAccessPermission(permissions.BasePermission):
             email=get_user_token(request).get("email"))
         if user_request:
             if request.method in permissions.SAFE_METHODS:
-                if user_request.has_perm("users_app.view_studycenters"):
+                if user_request.has_perm("studies_app.view_studycenters"):
                     return True
             elif request.method is DELETE:
-                if user_request.has_perm("users_app.delete_studycenters"):
+                if user_request.has_perm("studies_app.delete_studycenters"):
                     return True
             else:
-                if user_request.has_perm("users_app.add_studycenters") and user_request.has_perm("users_app.change_studycenters"):
+                if user_request.has_perm("studies_app.add_studycenters") and user_request.has_perm("studies_app.change_studycenters"):
                     return True
             return False
         else:
@@ -159,13 +159,13 @@ class StudyUsersAccessPermission(permissions.BasePermission):
             email=get_user_token(request).get("email"))
         if user_request:
             if request.method in permissions.SAFE_METHODS:
-                if user_request.has_perm("users_app.view_studyusers"):
+                if user_request.has_perm("studies_app.view_studyusers"):
                     return True
             elif request.method is DELETE:
-                if user_request.has_perm("users_app.delete_studyusers"):
+                if user_request.has_perm("studies_app.delete_studyusers"):
                     return True
             else:
-                if user_request.has_perm("users_app.add_studyusers") and user_request.has_perm("users_app.change_studyusers"):
+                if user_request.has_perm("studies_app.add_studyusers") and user_request.has_perm("studies_app.change_studyusers"):
                     return True
             return False
         else:
