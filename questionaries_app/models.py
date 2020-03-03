@@ -33,6 +33,7 @@ class Questionary(models.Model):
     num_maxRegistry = models.IntegerField(default=0)
     is_read = models.BooleanField(default=False)
     is_accessExternal = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
 
     study_id = models.ForeignKey(
         Study, related_name="study_questionary", on_delete=models.CASCADE)

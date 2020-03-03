@@ -12,6 +12,18 @@ class QuestionarySerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         questionary = Questionary.objects.create_questionary(**validated_data)
         return questionary
+    
+    def update(self, instance, validated_data):
+        instance.code = validated_data.get("code", instance.code)
+        instance.title = validated_data.get("title", instance.title)
+        instance.description = validated_data.get("descriptio", instance.description)
+        instance.num_minRegistry = validated_data.get("num_minRegistry", instance.num_minRegistry)
+        instance.num_maxRegistry = validated_data.get("num_maxRegistry", instance.num_maxRegistry)
+        instance.is_read = validated_data.get("is_read", instance.is_read)
+        instance.is_accessExternal = validated_data.get("is_accessExternal", instance.is_accessExternal)
+        
+        instance.save()
+        return instance
 
 
 class PageSerializer(serializers.ModelSerializer):

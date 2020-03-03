@@ -13,6 +13,7 @@ extra_patterns = [
 urlpatterns = [
     path('', include(extra_patterns)),
     path('', CrudQuestionaryAPI.as_view()),
+    path('get/<int:questionary_id>/', CrudQuestionaryAPI.as_view(), name='get-questionary'),
     path('<int:study_id>/', ListQuestionariesAPI.as_view()),
     path('count/<int:study_id>/', CountQuestionariesAPI.as_view())
 ]
