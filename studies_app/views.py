@@ -172,12 +172,15 @@ class CrudStudyCentersAPI(APIView):
             serializer.save()
         return HttpResponse(status=HTTP_200_OK)
 
-    def delete(self, request, study_id, format=None):
+    def delete(self, request, format=None):
         """Permite desactivar una tupla estudio centro
         """
+        
+        print(request.data)
+        center_id = request.data['center_id']
 
-        try:
-            instance = StudyCenters.objects.get(id=study_id)
+        try:            
+            instance = StudyCenters.objects.get(pk=center_id)
             instance.is_active = not instance.is_active
             instance.save()
             return HttpResponse(status=HTTP_200_OK)
@@ -190,7 +193,7 @@ class CrudStudyCentersAPI(APIView):
         """
 
         instances = StudyCenters.objects.filter(study_id=study_id).values(
-            "study_id", "center_id", "study_id__title_little", "center_id__name")
+            "id", "study_id", "center_id", "study_id__title_little", "center_id__name", "is_active")
         instances = json.dumps(list(instances), cls=DjangoJSONEncoder)
         return HttpResponse(content=instances, status=HTTP_200_OK, content_type="application/json")
 
