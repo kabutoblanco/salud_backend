@@ -7,8 +7,51 @@ from django.contrib.auth.models import BaseUserManager
 
 
 class QuestionaryManager(BaseUserManager):
+    """
+    Clase usada para prestar servicios a `Questionary` `Page` `Section`y `Question`
+
+    ...
+
+    Methods
+    - - - - -
+    create_questionary(code, title, description, num_minRegistry, num_maxRegistry, is_read, is_accessExternal, study_id)
+        Crea un nuevo cuestionario
+
+    create_page(name, pos_x)
+        Crea una nueva pagina
+
+    create_section(name, pos_y)
+        Crea una nueva seccion
+    """
 
     def create_questionary(self, code, title, description, num_minRegistry, num_maxRegistry, is_read, is_accessExternal, study_id):
+        """Crea un nuevo cuestionario
+
+        Parameters
+        - - - - -
+        code : int
+            Codigo de identificacion
+        title : str
+            Titulo del cuestionario
+        description : str
+            Descripción breve del cuestionario
+        num_minRegistry : int
+            Número minimo de registros
+        num_maxRegistry : int
+            Número máximo de registros
+        is_read : boolean
+            Indica si permite la lectura del cuestionario o no
+        is_accessExternal : boolean
+            Indica si puede ser accedido por un usuario externo
+        study_id : int 
+            Relación para indicar a cual estudio pertenece el cuestionario
+
+        Returns
+        - - - - -
+        `Questionary`
+            Un objeto cuestionario
+        """
+
         questionary = Questionary(code=code, title=title, description=description, num_minRegistry=num_minRegistry,
                                   is_read=is_read, is_accessExternal=is_accessExternal, study_id=study_id)
         questionary.save()
@@ -26,6 +69,31 @@ class QuestionaryManager(BaseUserManager):
 
 
 class Questionary(models.Model):
+    """Clase usada para representar la definicíón del modelo `Questionary` en Django
+
+    ...
+
+    Attributes
+    - - - - -
+    code : int
+        Codigo de identificacion
+    title : str
+        Titulo del cuestionario
+    description : str
+        Descripción breve del cuestionario
+    num_minRegistry : int
+        Número minimo de registros
+    num_maxRegistry : int
+        Número máximo de registros
+    is_read : boolean
+        Indica si permite la lectura del cuestionario o no
+    is_accessExternal : boolean
+        Indica si puede ser accedido por un usuario externo
+    is_active : boolean
+        Establece si el registro permance activo o no
+    study_id : int 
+        Relación para indicar a cual estudio pertenece el cuestionario
+    """
     code = models.CharField(max_length=10)
     title = models.CharField(max_length=36)
     description = models.CharField(max_length=125, blank=True)
@@ -49,6 +117,21 @@ class Questionary(models.Model):
 
 
 class Page(models.Model):
+    """Clase usada para representar la definicíón del modelo `Page` en Django
+
+    ...
+
+    Attributes
+    - - - - -
+    
+    questionary_id : int 
+        Relación para indicar a cual cuestionario pertenece la pagina
+    name : str
+        Nombre que identifica la pagina
+    pos_x : int
+        Indica en que posición de la grilla ira ubicado en el frontend
+    """
+
     name = models.CharField(max_length=36)
     pos_x = models.IntegerField(default=0)
 
@@ -66,6 +149,21 @@ class Page(models.Model):
 
 
 class Section(models.Model):
+    """Clase usada para representar la definicíón del modelo `Section` en Django
+
+    ...
+
+    Attributes
+    - - - - -
+    
+    page_id : int 
+        Relación para indicar a cual pagina pertenece la seccion
+    name : str
+        Nombre que identifica la seccion
+    pos_x : int
+        Indica en que posición de la grilla ira ubicado en el frontend
+    """
+
     name = models.CharField(max_length=36)
     pos_y = models.IntegerField(default=0)
 
@@ -83,6 +181,25 @@ class Section(models.Model):
 
 
 class Question(models.Model):
+    """Clase usada para representar la definicíón del modelo `Question` en Django
+
+    ...
+
+    Attributes
+    - - - - -
+    
+    questionary_id : int 
+        Relación para indicar a cual seccion  pertenece la pregunta
+    name : str
+        Nombre que identifica la pregunta
+    pos_x : int
+        Indica en que posición x de la grilla ira ubicado en el frontend
+    pos_y : int
+        Indica en que posición y de la grilla ira ubicado en el frontend
+    width : int
+        Indica el tamaño horizontal del elemento en la grilla del frontend
+    """
+
     name = models.CharField(max_length=36)
     pos_x = models.IntegerField(default=0)
     pos_y = models.IntegerField(default=0)
